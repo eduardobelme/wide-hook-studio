@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Studio">
+<meta name="theme-color" content="#0f6b5a">
+<title>Wide Hook Studio</title>
+<!--
+  Wide Hook Studio (live). One self-contained page: it holds no data and no keys.
+  When you open it, you sign in with Google and it reads your content notes straight from
+  Google Drive (My Drive > CONFIG.rootFolder > CONFIG.contentFolder), in your browser, with your own access.
+  It writes only: an idea's or draft's `status:` line, `approved:` on a draft you approve, a piece's
+  `awareness:` step, and new idea notes. It never moves, renames or deletes a note, and never
+  changes the text below a note's properties. Test it without touching real notes: dev/mock_drive.py.
+-->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f6b5a'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23f5c400' font-family='Arial Black,Arial' font-weight='900'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --surface-2:#f5f7f6; --ink:#13201b; --ink-2:#38463f; --muted:#5f6e68;
+  --line:#d3dbd7; --line-2:#e4e9e6;
+  --accent:#0f6b5a; --accent-hover:#0b5547; --on-accent:#ffffff; --accent-soft:#dcefe8; --accent-text:#0d5f50;
+  --marker:#f5c400; --on-marker:#1b1600;
+  --good:#1f7a3d; --good-soft:#e3f3e7; --warn:#8a5a00; --warn-soft:#fbf0d9; --bad:#b3261e; --bad-soft:#fbe9e7;
+  --s1:#083f35; --s2:#0e5a4c; --s3:#157564; --s4:#1f907c; --s5:#3aa58f; --s6:#5ab6a0; --s7:#2b5c8a;
+  --on-s1:#fff; --on-s2:#fff; --on-s3:#fff; --on-s4:#fff; --on-s5:#0b1311; --on-s6:#0b1311; --on-s7:#fff;
+  --shadow:0 1px 2px rgb(16 32 28 / .06),0 6px 20px rgb(16 32 28 / .07);
+  --scrim:rgb(10 18 15 / .5);
+  --f-display:"Anton","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
+  --f-body:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1412; --surface:#151d1a; --surface-2:#1a2420; --ink:#e4ebe8; --ink-2:#c0ccc7; --muted:#8e9d97;
+    --line:#2b3733; --line-2:#222d29;
+    --accent:#4fc4a6; --accent-hover:#6dd3b9; --on-accent:#06201a; --accent-soft:#17332b; --accent-text:#6dd3b9;
+    --good:#7bd88f; --good-soft:#15301d; --warn:#f0b54a; --warn-soft:#33270f; --bad:#ff8a80; --bad-soft:#3a1714;
+    --s1:#9fe5d2; --s2:#74d1ba; --s3:#4fbca2; --s4:#2f9e86; --s5:#1f806c; --s6:#176757; --s7:#93bde6;
+    --on-s1:#0b1311; --on-s2:#0b1311; --on-s3:#0b1311; --on-s4:#0b1311; --on-s5:#fff; --on-s6:#fff; --on-s7:#0b1311;
+    --shadow:0 1px 2px rgb(0 0 0 / .3),0 6px 20px rgb(0 0 0 / .25); --scrim:rgb(0 0 0 / .62);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.5;-webkit-text-size-adjust:100%;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+img{max-width:100%}
+h1,h2,h3,h4{margin:0;text-wrap:balance} p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent-text)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono)} .muted{color:var(--muted)} .small{font-size:12.5px}
+.eyebrow{font:500 10.5px/1.3 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.xs{font-size:12px;padding:4px 8px;border-radius:6px}
+.btn.big{font-size:16px;padding:11px 20px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+select,input[type="text"],input[type="search"],textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:7px 9px;font-size:13.5px;min-width:0;max-width:100%}
+textarea{width:100%;resize:vertical;line-height:1.45}
+@media (max-width:640px){select,input[type="text"],input[type="search"],textarea{font-size:16px}}
+.banner{max-width:1440px;margin:0 auto 12px;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.banner.test{background:var(--marker);color:var(--on-marker)}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+
+/* shell */
+.app{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:236px minmax(0,1fr);gap:18px;align-items:start}
+.side{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:14px}
+.brand{font-family:var(--f-display);font-size:24px;line-height:1;text-transform:uppercase;letter-spacing:.01em}
+.brand span{background:var(--marker);color:var(--on-marker);padding:0 .12em}
+.brand.big{font-size:42px}
+.lanes{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.lane{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:7px 10px;cursor:pointer;text-align:left;width:100%;color:var(--ink)}
+.lane b{font-size:13.5px}
+.lane .mono{font-size:11px;color:var(--muted)}
+.lane[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lane[aria-pressed="true"] .mono{color:var(--bg);opacity:.75}
+.nav{display:flex;flex-direction:column;gap:2px}
+.navgroup{font:500 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px}
+.navbtn{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;background:transparent;border-radius:7px;padding:7px 9px;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink-2);text-align:left;white-space:nowrap}
+.navbtn:hover{background:var(--surface-2)}
+.navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent-text)}
+.navbtn .n{font:500 11px/1 var(--f-mono);background:var(--surface-2);border:1px solid var(--line);padding:3px 6px;border-radius:999px;color:var(--ink-2)}
+.navbtn .n.hot{background:var(--marker);border-color:var(--marker);color:var(--on-marker)}
+.sync{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line-2);padding-top:10px}
+@media (max-width:920px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;gap:10px}
+  .lanes{flex-direction:row;flex-wrap:wrap}
+  .lane{width:auto;flex:1 1 auto}
+  .nav{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .navgroup{display:none}
+}
+.main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.mhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px}
+.mhead h1{font-size:26px;line-height:1.1;font-weight:700}
+.mhead p{color:var(--muted);font-size:13.5px;max-width:80ch;margin-top:4px}
+.persp{font:500 11.5px/1 var(--f-mono);letter-spacing:.04em;padding:6px 9px;border-radius:999px;background:var(--ink);color:var(--bg)}
+
+/* blocks */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h3{font-size:14.5px;font-weight:700;margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:1100px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+.kpi{text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:var(--ink)}
+.kpi:hover{border-color:var(--muted)}
+.kpi .big{font-family:var(--f-display);font-size:32px;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12.5px;color:var(--muted)}
+.list{display:flex;flex-direction:column}
+.li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 10px;align-items:center;padding:9px 0;border-top:1px solid var(--line-2)}
+.li:first-child{border-top:0}
+.li .lt{min-width:0;flex:1 1 260px}
+.li .t{display:block;border:0;background:none;padding:0;text-align:left;font-weight:600;font-size:13.5px;line-height:1.3;cursor:pointer;color:var(--ink)}
+.li .t:hover{text-decoration:underline}
+.li .m{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}
+.acts{justify-content:flex-end}
+.empty{color:var(--muted);font-size:13px;padding:8px 0}
+.more{border:0;background:none;color:var(--accent-text);cursor:pointer;padding:8px 0;font-size:13px;text-align:left}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 10px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tablewrap{overflow-x:auto;max-width:100%}
+table.t{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line-2);padding:7px 8px;text-align:left;vertical-align:top}
+table.t th{font:500 10.5px/1.3 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+table.t th button{all:unset;cursor:pointer}
+table.t td.num,table.t th.num{text-align:right}
+table.t tr.click{cursor:pointer} table.t tr.click:hover td{background:var(--surface-2)}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:4px;font:500 11px/1 var(--f-mono);padding:4px 7px;border-radius:5px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;background:var(--surface)}
+.chip.code{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.chip.ok{background:var(--good-soft);color:var(--good);border-color:transparent}
+.st{font:600 10.5px/1 var(--f-mono);letter-spacing:.03em;padding:4px 7px;border-radius:5px;white-space:nowrap;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.st.g-pack{background:var(--accent-soft);color:var(--accent-text);border-color:transparent}
+.st.g-script,.st.g-prod{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.st.g-pub{background:var(--good-soft);color:var(--good);border-color:transparent}
+.st.g-shelf{opacity:.7}
+.step{display:inline-flex;align-items:center;font:600 10.5px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:5px;white-space:nowrap}
+.step.s1{background:var(--s1);color:var(--on-s1)}.step.s2{background:var(--s2);color:var(--on-s2)}.step.s3{background:var(--s3);color:var(--on-s3)}
+.step.s4{background:var(--s4);color:var(--on-s4)}.step.s5{background:var(--s5);color:var(--on-s5)}.step.s6{background:var(--s6);color:var(--on-s6)}.step.s7{background:var(--s7);color:var(--on-s7)}
+.who{font:500 11px/1.3 var(--f-mono);color:var(--muted)}
+.flag{display:inline-block;font:600 12px/1.4 var(--f-body);padding:6px 9px;border-radius:6px;background:var(--bad-soft);color:var(--bad)}
+
+/* pipeline */
+.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px;align-items:start}
+@media (max-width:640px){.board{grid-template-columns:minmax(0,1fr);overflow:visible}}
+.col{background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.col h3{font-size:12.5px;display:flex;justify-content:space-between;padding:2px 4px}
+.col h3 .n{font:500 11.5px/1 var(--f-mono);color:var(--muted)}
+.col .sub{font:500 10px/1.3 var(--f-mono);color:var(--muted);padding:0 4px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left;width:100%;color:var(--ink)}
+.pc:hover{border-color:var(--muted)}
+.pc .pt{font-weight:600;font-size:13px;line-height:1.3}
+.pc .pm{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.pc .from{font:500 10.5px/1.2 var(--f-mono);color:var(--muted)}
+
+/* calendar */
+.agenda{display:flex;flex-direction:column;gap:12px}
+.day{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;border-top:1px solid var(--line-2);padding-top:10px}
+.day:first-child{border-top:0;padding-top:0}
+.day .dl{font:600 12px/1.4 var(--f-mono);color:var(--ink-2)}
+.day.today .dl{color:var(--accent-text)}
+@media (max-width:560px){.day{grid-template-columns:minmax(0,1fr)}}
+
+/* journey */
+.jt{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px;font-variant-numeric:tabular-nums}
+.jt th{font:500 10.5px/1.25 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px;vertical-align:bottom}
+.jt td{padding:0}
+.bandrow td{padding:10px 6px 0}
+.bandrow span{font:600 10.5px/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.cell{width:100%;min-height:44px;border-radius:7px;border:1px solid var(--line-2);background:var(--surface);display:flex;align-items:center;padding:6px 9px;cursor:pointer;text-align:left;color:var(--ink)}
+.cell b{font-family:var(--f-display);font-size:19px;line-height:1;font-weight:400}
+.cell.zero{background:var(--surface-2);border-style:dashed}
+.cell.zero b{color:var(--muted)}
+.cell[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:-1px}
+.cell:hover{border-color:var(--accent)}
+.rowhead{padding:4px 6px 4px 0;min-width:130px}
+.bar{height:8px;border-radius:4px;background:var(--line-2);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;border-radius:4px;background:var(--accent)}
+
+/* forms */
+.form{display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--ink-2)}
+.field select,.field input,.field textarea{width:100%}
+.check{display:flex;gap:8px;align-items:center;font-size:13.5px}
+ol.steps{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+
+/* drawer */
+.drawer{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;justify-content:flex-end}
+.dpanel{background:var(--bg);width:min(1060px,100%);height:100%;overflow:auto;-webkit-overflow-scrolling:touch;box-shadow:-10px 0 40px rgb(0 0 0 / .25);
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 16px;display:flex;flex-direction:column;gap:14px}
+.dhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+.dhead h2{font-size:21px;line-height:1.25;margin-top:6px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:880px){.dgrid{grid-template-columns:minmax(0,1fr)}.dside{order:-1}}
+details.card summary{cursor:pointer}
+.dside{display:flex;flex-direction:column;gap:14px}
+.props{display:grid;grid-template-columns:minmax(80px,auto) minmax(0,1fr);gap:4px 10px;font-size:12.5px}
+.props dt{font-family:var(--f-mono);color:var(--muted);overflow-wrap:anywhere}
+.props dd{margin:0;overflow-wrap:anywhere}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metrics div{background:var(--surface-2);border-radius:7px;padding:6px 8px}
+.metrics b{display:block;font-family:var(--f-display);font-size:20px;font-weight:400;line-height:1.1}
+.metrics span{font:500 10.5px/1.2 var(--f-mono);color:var(--muted)}
+
+/* note body */
+.mdbody{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.mdbody>*+*{margin-top:10px}
+.mdbody .mdh{line-height:1.3}
+.mdbody h2.mdh{font-size:17px}.mdbody h3.mdh{font-size:15px}.mdbody h4.mdh,.mdbody h5.mdh,.mdbody h6.mdh{font-size:14px}
+.mdbody ul,.mdbody ol{padding-left:22px;margin:0}
+.mdbody li.cb{list-style:none;margin-left:-18px}
+.mdbody blockquote{margin:0;border-left:3px solid var(--line);padding:2px 0 2px 12px;color:var(--ink-2)}
+.mdbody code{font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);padding:1px 4px;border-radius:4px}
+.mdbody pre.code{font:12px/1.5 var(--f-mono);background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.mdbody hr{border:0;border-top:1px solid var(--line)}
+.mdbody mark{background:var(--marker);color:var(--on-marker)}
+.wl{color:var(--accent-text);font-weight:500}
+table.md{font-size:12.5px}
+
+/* sign-in, loading, toast */
+.signin{max-width:520px;margin:12vh auto 0;display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.signin p{font-size:16px;color:var(--ink-2)}
+.loading{display:flex;gap:10px;align-items:center;color:var(--muted)}
+.spin{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);vertical-align:-2px}
+@media (prefers-reduced-motion:no-preference){.spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.dpanel{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:var(--bg);padding:8px 10px 8px 16px;border-radius:999px;font-size:13px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow);display:flex;gap:10px;align-items:center}
+.toast .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+</style>
+</head>
+<body>
+<noscript>Wide Hook Studio needs JavaScript.</noscript>
+<div id="app"></div>
+<div id="drawer-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+(() => {
+"use strict";
+
+/* ================= settings ================= */
+const CONFIG = {
+  clientId: "502551187833-kme09b3hnvb6pb4lgbchkmhu3r1av70p.apps.googleusercontent.com", // Google Cloud project wide-hook-studio, client "Wide Hook Studio web" (public by design; works only from https://eduardobelme.github.io)
+  rootFolder: "00_EduOS",       // top-level folder in My Drive
+  contentFolder: "09 Content",  // inside rootFolder
+  ownerIdeas: "Eduardo",        // ideas you type are saved in <lane>/01 IDEAS/<ownerIdeas>/
+  obsidianVault: "00_EduOS",
+  scope: "https://www.googleapis.com/auth/drive",
+};
+const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const MOCK_API = LOCAL ? new URLSearchParams(location.search).get("api") : null; // test mode, only ever on this computer
+const API = MOCK_API || "https://www.googleapis.com";
+
+const store = (kind) => ({
+  get(k) { try { return window[kind].getItem(k); } catch { return null; } },
+  set(k, v) { try { window[kind].setItem(k, v); } catch {} },
+  del(k) { try { window[kind].removeItem(k); } catch {} },
+});
+const ls = store("localStorage"), ss = store("sessionStorage");
+const clientId = () => CONFIG.clientId || ls.get("whs.clientId") || "";
+
+/* ================= vocabulary ================= */
+const STEPS = [
+  { key:"unaware", name:"Unaware", band:"Awareness", knows:"doesn't feel the problem" },
+  { key:"situation", name:"Situation", band:"Awareness", knows:"is living something happening now" },
+  { key:"problem", name:"Problem", band:"Awareness", knows:"feels the pain, no solution yet" },
+  { key:"solution", name:"Solution", band:"Consideration", knows:"compares options" },
+  { key:"product", name:"Product", band:"Decision", knows:"knows you, hasn't bought" },
+  { key:"most", name:"Most-Aware", band:"Decision", knows:"is ready, needs a reason" },
+  { key:"customer", name:"Customer", band:"Retention", knows:"already bought or joined" },
+];
+STEPS.forEach((s, i) => { s.n = i + 1; });
+const STEP = Object.fromEntries(STEPS.map((s) => [s.key, s]));
+const BANDS = ["Awareness", "Consideration", "Decision", "Retention"];
+const IDEA_ST = ["new", "refining", "approved", "icebox", "dead"];
+const DRAFT_ST = ["copy", "visual", "record", "edit", "review", "approved", "parked"]; // "approved" = Eduardo's go to post: the daily content task picks it up
+const ST_NAME = { new:"New", refining:"Refining", approved:"Approved", icebox:"Icebox", dead:"Dead", copy:"Copy", visual:"Visual", record:"Record", edit:"Edit", review:"Review", parked:"Parked", ready:"Ready to post", posted:"Posted", other:"Other" };
+const ST_GROUP = { new:"idea", refining:"idea", approved:"pack", icebox:"shelf", dead:"shelf", copy:"script", visual:"script", record:"prod", edit:"prod", review:"prod", parked:"shelf", ready:"pub", posted:"pub", other:"shelf" };
+const CH = { IG:"Instagram", FB:"Facebook", TT:"TikTok", SK:"Skool", YT:"YouTube", YS:"YouTube Shorts", LI:"LinkedIn", X:"X / Threads", NL:"Newsletter", EM:"Email", PC:"Podcast", WEB:"Web", AD:"Ads" };
+const STAGE_OF = { "01 IDEAS":"ideas", "02 DRAFTS":"drafts", "03 READY TO POST":"ready", "04 POSTED":"posted" };
+const METRICS = [
+  ["views", /^(vistas|views|plays|reproducciones)/i, "Views"],
+  ["reach", /^(alcance|reach)/i, "Reach"],
+  ["impressions", /^(impresiones|impressions)/i, "Impressions"],
+  ["likes", /^(likes|me gusta|reactions|reacciones)/i, "Likes"],
+  ["comments", /^(comentarios|comments|replies|respuestas)/i, "Comments"],
+  ["saves", /^(guardados|saves|bookmarks)/i, "Saves"],
+  ["shares", /^(compartidos|shares|reposts|sends|env[ií]os)/i, "Shares"],
+  ["follows", /^(seguidores ganados|followers gained|subs|suscriptores)/i, "Follows"],
+  ["members", /^(miembros nuevos)/i, "New members"],
+];
+
+/* ================= state ================= */
+const S = {
+  auth: "out", expired: false, authMsg: "", email: ls.get("whs.email") || "",
+  lanes: [], noLaneId: null, notes: [], loadedAt: null, fromCache: false, loading: false, progress: "",
+  lane: ls.get("whs.lane") || "all", view: "today", open: null, busy: false, undo: null,
+  f: { it: "open", who: "", q: "", ch: "" }, month: isoToday().slice(0, 7), jcell: null, sort: { key: "postedAt", dir: -1 },
+};
+
+/* ================= small helpers ================= */
+function isoToday() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const dateOf = (v) => { const m = /(\d{4}-\d{2}-\d{2})/.exec(String(v || "")); return m ? m[1] : ""; };
+const daysAgo = (d) => Math.round((new Date(isoToday()) - new Date(d)) / 864e5);
+const fmtDate = (d) => { if (!d) return ""; const [y, m, dd] = d.split("-").map(Number); const s = new Date(y, m - 1, dd).toLocaleDateString("en-GB", { day:"numeric", month:"short" }); return y !== new Date().getFullYear() ? `${s} ${y}` : s; };
+const fmtDay = (d) => { const [y, m, dd] = d.split("-").map(Number); return new Date(y, m - 1, dd).toLocaleDateString("en-GB", { weekday:"short", day:"numeric", month:"short" }); };
+const fmtNum = (n) => n == null ? "—" : n >= 10000 ? `${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K` : n.toLocaleString("en-US");
+const ago = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 60) return "just now"; if (s < 3600) return `${Math.floor(s / 60)} min ago`; if (s < 86400) return `${Math.floor(s / 3600)} h ago`; return fmtDate(dateOf(iso)); };
+const stripMd = (s) => String(s).replace(/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => b || a).replace(/\*\*|__|`/g, "").replace(/(^|\s)\*(\S[^*]*?)\*/g, "$1$2").trim();
+const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const laneOf = (key) => S.lanes.find((l) => l.key === key);
+const laneName = (key) => key === "none" ? "No lane" : (laneOf(key)?.name || "—");
+const scope = () => S.lane === "all" ? S.notes : S.notes.filter((n) => n.lane === S.lane);
+class AuthError extends Error {}
+
+/* ================= notes: parsing ================= */
+function splitFm(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(text);
+  return m ? { fm: m[1], body: text.slice(m[0].length) } : { fm: "", body: text };
+}
+function unquote(v) {
+  v = String(v).trim();
+  if (v.length >= 2 && v[0] === '"' && v[v.length - 1] === '"') return v.slice(1, -1).replace(/\\(["\\])/g, "$1");
+  if (v.length >= 2 && v[0] === "'" && v[v.length - 1] === "'") return v.slice(1, -1).replace(/''/g, "'");
+  return v;
+}
+function parseFm(fm) {
+  const out = {}; let cur = null;
+  for (const line of fm.split(/\r?\n/)) {
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const item = /^\s+-\s+(.*)$/.exec(line);
+    if (item && cur) { if (!Array.isArray(out[cur])) out[cur] = out[cur] ? [out[cur]] : []; out[cur].push(unquote(item[1])); continue; }
+    const kv = /^([^\s#-][^:]*?):(?:\s+(.*))?$/.exec(line);
+    if (kv) {
+      cur = kv[1].trim(); const v = (kv[2] || "").trim();
+      out[cur] = v === "" ? "" : (v[0] === "[" && v[1] !== "[" && v[v.length - 1] === "]") ? v.slice(1, -1).split(",").map(unquote).filter(Boolean) : unquote(v);
+    }
+  }
+  return out;
+}
+function chFromText(t) {
+  t = String(t || "");
+  if (/instagram|\breel/i.test(t)) return "IG"; if (/facebook/i.test(t)) return "FB"; if (/tiktok/i.test(t)) return "TT";
+  if (/skool/i.test(t)) return "SK"; if (/youtube short|\bshorts?\b/i.test(t)) return "YS"; if (/youtube/i.test(t)) return "YT";
+  if (/linkedin/i.test(t)) return "LI"; if (/threads|(^|\W)X(\W|$)/.test(t)) return "X"; if (/newsletter|email|correo/i.test(t)) return "NL";
+  if (/podcast/i.test(t)) return "PC"; return "";
+}
+function num(s) {
+  if (s == null) return null;
+  const t = String(s).trim().replace(/^[~≈+]\s*/, "");
+  const m = /^(\d{1,3}(?:[ ,.]\d{3})+|\d+(?:[.,]\d+)?)\s*(k|mil|m)?\b/i.exec(t);
+  if (!m) return null;
+  let a = m[1]; const mult = m[2] ? (/^m$/i.test(m[2]) ? 1e6 : 1e3) : 1;
+  a = (!m[2] && /^\d{1,3}([ ,.]\d{3})+$/.test(a)) ? a.replace(/[ ,.]/g, "") : a.replace(",", ".");
+  const n = parseFloat(a) * mult; return isFinite(n) ? Math.round(n) : null;
+}
+function cells(line) {
+  let t = line.trim(); if (t.startsWith("|")) t = t.slice(1); if (t.endsWith("|") && !t.endsWith("\\|")) t = t.slice(0, -1);
+  return t.split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|").trim());
+}
+function parsePerf(body) {
+  const i = body.search(/^##\s+(Performance|Rendimiento)\s*$/m); if (i < 0) return null;
+  const rows = []; let started = false;
+  for (const line of body.slice(i).split(/\r?\n/).slice(1)) {
+    if (/^#{1,6}\s/.test(line)) break;
+    if (/^\s*\|/.test(line)) { started = true; rows.push(cells(line)); } else if (started && line.trim()) break;
+  }
+  if (rows.length < 2) return null;
+  const map = rows[0].map((h) => (METRICS.find(([, re]) => re.test(h.trim())) || [null])[0]);
+  const data = rows.slice(1).filter((r) => !r.every((c) => /^:?-+:?$/.test(c)));
+  let latest = null;
+  for (const r of data) {
+    const v = {}; let any = false;
+    map.forEach((k, j) => { if (!k) return; const n = num(r[j]); if (n != null) { v[k] = (v[k] || 0) + n; any = true; } });
+    if (any) latest = { label: stripMd(r[0] || ""), date: dateOf(r[1]), ...v };
+  }
+  return { latest, rows: data.length };
+}
+const parseCheckpoints = (v) => [...String(v || "").matchAll(/\b(D\d+)\s+(\d{4}-\d{2}-\d{2})/g)].map((m) => ({ label: m[1], date: m[2] }));
+function parseNote(file, text) {
+  const { fm, body } = splitFm(text); const p = parseFm(fm);
+  const id = /^[A-Z]+-[A-Z]+-\d+$/.test(p.id || "") ? p.id : ((/^([A-Z]+-[A-Z]+-\d{3,})\b/.exec(file.name) || [])[1] || "");
+  const h1 = (/^#\s+(.+)$/m.exec(body) || [])[1] || "";
+  let title = h1 || file.name.replace(/\.md$/i, "").replace(/^\d{4}-\d{2}-\d{2}\s+—\s+/, "").replace(/^[A-Z]+-[A-Z]+-\d+\s+—\s+/, "");
+  if (id) title = title.replace(new RegExp(`^${reEsc(id)}\\s*[·—:-]\\s*`), "");
+  let status = String(p.status || "").trim().toLowerCase();
+  if (file.stage === "posted") status = "posted"; else if (file.stage === "ready") status = "ready";
+  else if (!(file.stage === "ideas" ? IDEA_ST : DRAFT_ST).includes(status)) status = "other";
+  const aw = String(p.awareness || "").toLowerCase();
+  return {
+    fileId: file.id, file, name: file.name, path: file.path, lane: file.lane, stage: file.stage, who: file.who,
+    id, title: stripMd(title) || file.name, status, statusRaw: Array.isArray(p.status) ? p.status.join(", ") : String(p.status || ""),
+    ch: id ? id.split("-")[1] : chFromText(p.channel), channel: String(p.channel || ""), format: String(p.format || ""),
+    hook: String(p.hook || ""), url: /^https?:\/\//.test(p.url || "") ? p.url : "",
+    postedAt: dateOf(p.posted_at), scheduledAt: dateOf(p.scheduled_at), date: dateOf(p.date) || dateOf(file.name),
+    approved: String(p.approved || ""), awareness: STEP[aw] ? aw : "", awStatus: String(p.awareness_status || ""),
+    fm: p, body, perf: parsePerf(body), checkpoints: parseCheckpoints(p.checkpoints),
+  };
+}
+
+/* ================= notes: writing (properties only) ================= */
+function yamlScalar(v) {
+  v = String(v);
+  if (v === "" || /^[\s[\]{}&*!|>'"%@`,?:#-]/.test(v) || /: |\s#|\s$/.test(v)) return `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  return v;
+}
+function setProps(text, changes) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(?=\r?\n|$)/.exec(text);
+  if (!m) throw new Error("This note has no properties block. Change it in Obsidian.");
+  const nl = text.includes("\r\n") ? "\r\n" : "\n";
+  const lines = m[1].split(/\r?\n/); const old = {};
+  for (const [key, val] of Object.entries(changes)) {
+    const re = new RegExp(`^${reEsc(key)}:(\\s|$)`);
+    const idx = lines.findIndex((l) => re.test(l));
+    let end = idx + 1; if (idx >= 0) while (end < lines.length && /^\s+\S/.test(lines[end])) end++;
+    old[key] = idx >= 0 ? unquote(lines[idx].slice(key.length + 1)) : null;
+    if (val == null) { if (idx >= 0) lines.splice(idx, end - idx); continue; }
+    const line = `${key}: ${yamlScalar(val)}`;
+    if (idx >= 0) lines.splice(idx, end - idx, line);
+    else { const up = lines.findIndex((l) => /^up:(\s|$)/.test(l)); lines.splice(up >= 0 ? up : lines.length, 0, line); }
+  }
+  return { text: `---${nl}${lines.join(nl)}${nl}---${text.slice(m[0].length)}`, old };
+}
+
+/* ================= Google sign-in ================= */
+let TOKEN = null, TOKEN_EXP = 0;
+function restoreToken() {
+  try { const t = JSON.parse(ss.get("whs.token") || "null"); if (t && t.exp > Date.now() + 60e3) { TOKEN = t.token; TOKEN_EXP = t.exp; return true; } } catch {}
+  return false;
+}
+function keepToken(token, seconds) { TOKEN = token; TOKEN_EXP = Date.now() + (seconds - 120) * 1000; ss.set("whs.token", JSON.stringify({ token: TOKEN, exp: TOKEN_EXP })); }
+function gisReady() {
+  return new Promise((res, rej) => { const t0 = Date.now(); (function poll() {
+    if (window.google?.accounts?.oauth2) return res();
+    if (Date.now() - t0 > 12000) return rej(new Error("Google sign-in didn't load. Check the connection and reload the page."));
+    setTimeout(poll, 100); })(); });
+}
+async function signIn() {
+  if (MOCK_API) { keepToken("test-token", 3600); return; }
+  if (!clientId()) throw new Error("This copy has no Google client ID yet.");
+  await gisReady();
+  await new Promise((resolve, reject) => {
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: clientId(), scope: CONFIG.scope, login_hint: S.email || undefined,
+      callback: (r) => {
+        if (!r || !r.access_token) return reject(new Error(r?.error_description || r?.error || "Sign-in was cancelled."));
+        if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(r, CONFIG.scope)) return reject(new Error("The page needs access to your Google Drive. Sign in again and allow it."));
+        keepToken(r.access_token, Number(r.expires_in || 3600)); resolve();
+      },
+      error_callback: (e) => reject(new Error(e?.type === "popup_closed" ? "The sign-in window was closed." : e?.type === "popup_failed_to_open" ? "The browser blocked the sign-in window. Allow pop-ups for this page." : "Sign-in failed.")),
+    });
+    tc.requestAccessToken({ prompt: "" });
+  });
+}
+
+/* ================= Google Drive ================= */
+async function api(path, opts = {}) {
+  if (!TOKEN || Date.now() > TOKEN_EXP) throw new AuthError("Signed out");
+  let r;
+  try { r = await fetch(API + path, { ...opts, headers: { Authorization: `Bearer ${TOKEN}`, ...(opts.headers || {}) } }); }
+  catch { throw new Error(navigator.onLine === false ? "You're offline." : "Couldn't reach Google Drive."); }
+  if (r.status === 401) { TOKEN = null; ss.del("whs.token"); throw new AuthError("Session ended"); }
+  if (!r.ok) { let msg = ""; try { msg = (await r.json()).error?.message || ""; } catch {} throw new Error(`Google Drive said ${r.status}${msg ? `: ${msg}` : ""}`); }
+  return r;
+}
+const FIELDS = "id,name,mimeType,modifiedTime,md5Checksum,parents";
+const isFolder = (f) => f.mimeType === "application/vnd.google-apps.folder";
+const q = (s) => s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+async function list(query) {
+  let out = [], page = "";
+  do {
+    const p = new URLSearchParams({ q: query, fields: `nextPageToken,files(${FIELDS})`, pageSize: "1000", spaces: "drive" });
+    if (page) p.set("pageToken", page);
+    const j = await (await api(`/drive/v3/files?${p}`)).json();
+    out = out.concat(j.files || []); page = j.nextPageToken || "";
+  } while (page);
+  return out;
+}
+const children = (id) => list(`'${q(id)}' in parents and trashed = false`);
+async function folderIn(parent, name) { return (await list(`name = '${q(name)}' and '${q(parent)}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`))[0] || null; }
+async function getText(id) { return (await api(`/drive/v3/files/${encodeURIComponent(id)}?alt=media`)).text(); }
+async function putText(id, text) {
+  return (await api(`/upload/drive/v3/files/${encodeURIComponent(id)}?uploadType=media&fields=${FIELDS}`, { method: "PATCH", headers: { "Content-Type": "text/markdown; charset=UTF-8" }, body: text })).json();
+}
+async function createText(parent, name, text) {
+  const b = `whs${Math.random().toString(36).slice(2)}`;
+  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name, parents: [parent], mimeType: "text/markdown" })}\r\n--${b}\r\nContent-Type: text/markdown; charset=UTF-8\r\n\r\n${text}\r\n--${b}--`;
+  return (await api(`/upload/drive/v3/files?uploadType=multipart&fields=${FIELDS}`, { method: "POST", headers: { "Content-Type": `multipart/related; boundary=${b}` }, body })).json();
+}
+async function whoami() { const j = await (await api("/drive/v3/about?fields=user(emailAddress,displayName)")).json(); S.email = j.user?.emailAddress || ""; if (S.email) ls.set("whs.email", S.email); }
+async function pool(items, n, fn) { let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) await fn(items[i++]); })); }
+
+/* ================= this device's copy (IndexedDB) ================= */
+const idb = (() => {
+  let dbp = null; const mem = new Map(), memMeta = new Map();
+  function open() {
+    if (!dbp) dbp = new Promise((res) => { try { const r = indexedDB.open("wide-hook-studio", 1); r.onupgradeneeded = () => { r.result.createObjectStore("files", { keyPath: "id" }); r.result.createObjectStore("meta"); }; r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null); } catch { res(null); } });
+    return dbp;
+  }
+  async function tx(name, mode, fn) {
+    const db = await open(); if (!db) return undefined;
+    return new Promise((res) => { try { const t = db.transaction(name, mode); const req = fn(t.objectStore(name)); t.oncomplete = () => res(req ? req.result : null); t.onerror = t.onabort = () => res(undefined); } catch { res(undefined); } });
+  }
+  return {
+    async getAll() { const r = await tx("files", "readonly", (s) => s.getAll()); return r === undefined ? [...mem.values()] : r; },
+    put(v) { mem.set(v.id, v); return tx("files", "readwrite", (s) => s.put(v)); },
+    del(id) { mem.delete(id); return tx("files", "readwrite", (s) => s.delete(id)); },
+    async meta(k) { const r = await tx("meta", "readonly", (s) => s.get(k)); return r === undefined ? (memMeta.get(k) ?? null) : (r ?? null); },
+    setMeta(k, v) { memMeta.set(k, v); return tx("meta", "readwrite", (s) => s.put(v, k)); },
+    async clear() { mem.clear(); memMeta.clear(); await tx("files", "readwrite", (s) => s.clear()); await tx("meta", "readwrite", (s) => s.clear()); },
+  };
+})();
+
+/* ================= loading the OS ================= */
+async function discover() {
+  const root = await folderIn("root", CONFIG.rootFolder);
+  if (!root) throw new Error(`There's no folder named "${CONFIG.rootFolder}" at the top of the My Drive of ${S.email || "this account"}. Sign in with the account that owns it.`);
+  const content = await folderIn(root.id, CONFIG.contentFolder);
+  if (!content) throw new Error(`There's no "${CONFIG.contentFolder}" folder inside ${CONFIG.rootFolder}.`);
+  const base = `${CONFIG.contentFolder}/`, lanes = [], targets = [];
+  for (const f of (await children(content.id)).filter(isFolder).sort((a, b) => a.name.localeCompare(b.name))) {
+    if (/^00 IDEAS/i.test(f.name)) { targets.push({ id: f.id, lane: "none", stage: "ideas", who: "No lane", path: base + f.name }); continue; }
+    if (!/^\d{2} /.test(f.name)) continue;
+    const m = /^\d{2}\s+(.*?)\s*(?:\(([A-Za-z]{2})\))?$/.exec(f.name);
+    lanes.push({ key: f.id, folder: f.name, name: m ? m[1] : f.name, lang: (m && m[2]) || "", code: "", moc: "", folders: {} });
+  }
+  await Promise.all(lanes.map(async (lane) => {
+    const kids = await children(lane.key);
+    const moc = kids.find((k) => !isFolder(k) && /^00 MOC.*\.md$/i.test(k.name)); lane.moc = moc ? moc.name.replace(/\.md$/i, "") : "";
+    await Promise.all(kids.filter(isFolder).map(async (k) => {
+      const stage = STAGE_OF[k.name]; if (!stage) return;
+      lane.folders[stage] = k.id; const path = `${base}${lane.folder}/${k.name}`;
+      targets.push({ id: k.id, lane: lane.key, stage, who: "", path });
+      if (stage !== "ideas") return;
+      for (const s of (await children(k.id)).filter(isFolder)) {
+        targets.push({ id: s.id, lane: lane.key, stage, who: s.name, path: `${path}/${s.name}` });
+        if (s.name.toLowerCase() === CONFIG.ownerIdeas.toLowerCase()) lane.folders.ideasOwner = s.id;
+      }
+    }));
+  }));
+  return { lanes, targets, noLaneId: (targets.find((t) => t.lane === "none") || {}).id || null };
+}
+async function listFiles(targets) {
+  const all = [];
+  await pool(targets, 6, async (t) => {
+    for (const k of await children(t.id)) if (!isFolder(k) && /\.md$/i.test(k.name) && !/^00 /.test(k.name))
+      all.push({ id: k.id, name: k.name, modifiedTime: k.modifiedTime, md5Checksum: k.md5Checksum || "", lane: t.lane, stage: t.stage, who: t.who, path: `${t.path}/${k.name}`, folderId: t.id });
+  });
+  return all;
+}
+function laneCodes() {
+  for (const l of S.lanes) {
+    const c = {}; for (const n of S.notes) if (n.lane === l.key && n.id) { const p = n.id.split("-")[0]; c[p] = (c[p] || 0) + 1; }
+    l.code = Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+  }
+}
+async function showCache() {
+  const idx = await idb.meta("index"); if (!idx || S.notes.length) return;
+  const texts = new Map((await idb.getAll()).map((c) => [c.id, c.text]));
+  S.lanes = idx.lanes; S.noLaneId = idx.noLaneId; S.loadedAt = idx.at; S.fromCache = true;
+  S.notes = idx.files.filter((f) => texts.has(f.id)).map((f) => parseNote(f, texts.get(f.id)));
+  laneCodes(); render();
+}
+async function loadAll() {
+  if (S.loading) return;
+  S.loading = true; S.progress = "Finding your folders…"; renderStatus();
+  try {
+    const d = await discover();
+    const files = await listFiles(d.targets);
+    const cached = new Map((await idb.getAll()).map((c) => [c.id, c]));
+    const notes = []; let done = 0;
+    await pool(files, 8, async (f) => {
+      const c = cached.get(f.id); let text;
+      if (c && ((f.md5Checksum && c.md5 === f.md5Checksum) || (!f.md5Checksum && c.modifiedTime === f.modifiedTime))) text = c.text;
+      else { text = await getText(f.id); idb.put({ id: f.id, md5: f.md5Checksum, modifiedTime: f.modifiedTime, text }); }
+      notes.push(parseNote(f, text)); done++;
+      if (done % 12 === 0 || done === files.length) { S.progress = `Reading notes ${done} of ${files.length}…`; renderStatus(); }
+    });
+    const live = new Set(files.map((f) => f.id)); for (const id of cached.keys()) if (!live.has(id)) idb.del(id);
+    S.lanes = d.lanes; S.noLaneId = d.noLaneId; S.notes = notes; S.loadedAt = new Date().toISOString(); S.fromCache = false; laneCodes();
+    idb.setMeta("index", { lanes: d.lanes, noLaneId: d.noLaneId, files, at: S.loadedAt });
+    if (S.lane !== "all" && !laneOf(S.lane)) S.lane = "all";
+  } finally { S.loading = false; S.progress = ""; }
+  render();
+}
+
+/* ================= changes you make ================= */
+function replaceNote(n) { const i = S.notes.findIndex((x) => x.fileId === n.fileId); if (i >= 0) S.notes[i] = n; else S.notes.push(n); }
+async function patchNote(note, changes, label) {
+  const fresh = await getText(note.fileId);
+  const { text, old } = setProps(fresh, changes);
+  if (splitFm(text).body !== splitFm(fresh).body) throw new Error("Safety stop: that change would have touched the note's text. Nothing was saved.");
+  if (text === fresh) { toast("Already set"); return; }
+  const meta = await putText(note.fileId, text);
+  const file = { ...note.file, modifiedTime: meta.modifiedTime || note.file.modifiedTime, md5Checksum: meta.md5Checksum || "" };
+  idb.put({ id: file.id, md5: file.md5Checksum, modifiedTime: file.modifiedTime, text });
+  replaceNote(parseNote(file, text)); render();
+  toast(`${label} · saved in Drive`, { undo: () => write(S.notes.find((x) => x.fileId === note.fileId), old, "Undone", true) });
+}
+function write(note, changes, label, isUndo) {
+  if (!note) return;
+  if (S.busy) { toast("Still saving the last change…"); return; }
+  S.busy = true; toast(isUndo ? "Undoing…" : "Saving…");
+  return guarded(async () => { try { await patchNote(note, changes, label); } finally { S.busy = false; } });
+}
+async function createIdea(f) {
+  const lane = laneOf(f.lane);
+  const parent = lane ? (lane.folders.ideasOwner || lane.folders.ideas) : S.noLaneId;
+  if (!parent) throw new Error("Couldn't find the ideas folder for that lane.");
+  const today = isoToday();
+  const clean = f.title.replace(/[\\/:*?"<>|#^[\]]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 90);
+  const taken = new Set(S.notes.filter((n) => n.file.folderId === parent).map((n) => n.name));
+  let name = `${today} — ${clean}.md`; for (let i = 2; taken.has(name); i++) name = `${today} — ${clean} (${i}).md`;
+  const longDate = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+  const fm = ["---", "type: idea", `lane: ${lane ? yamlScalar(lane.folder) : '"none (Eduardo did not name one)"'}`, "source type: Wide Hook Studio (typed by Eduardo)", `date: ${today}`, `status: ${f.approve ? "approved" : "new"}`];
+  if (f.step) fm.push(`awareness: ${f.step}`, "awareness_status: confirmed");
+  if (f.channel) fm.push(`channel: ${yamlScalar(f.channel)}`);
+  if (f.format) fm.push(`format: ${yamlScalar(f.format)}`);
+  if (f.offer) fm.push(`offer: ${yamlScalar(f.offer)}`);
+  fm.push(`up: "[[${lane && lane.moc ? lane.moc : "Content - Map"}]]"`, "---");
+  const text = `${fm.join("\n")}\n\n# ${f.title.trim()}\n\n## Idea (Eduardo's words, ${longDate})\n\n${f.text.trim() || "(no text yet)"}\n`;
+  const meta = await createText(parent, name, text);
+  const target = { lane: lane ? lane.key : "none", stage: "ideas", who: lane ? (lane.folders.ideasOwner ? CONFIG.ownerIdeas : "") : "No lane" };
+  const folderPath = lane ? `${CONFIG.contentFolder}/${lane.folder}/01 IDEAS${lane.folders.ideasOwner ? `/${CONFIG.ownerIdeas}` : ""}` : (S.notes.find((n) => n.lane === "none")?.path.replace(/\/[^/]+$/, "") || CONFIG.contentFolder);
+  const file = { id: meta.id, name: meta.name || name, modifiedTime: meta.modifiedTime, md5Checksum: meta.md5Checksum || "", ...target, path: `${folderPath}/${meta.name || name}`, folderId: parent };
+  idb.put({ id: file.id, md5: file.md5Checksum, modifiedTime: file.modifiedTime, text });
+  const n = parseNote(file, text); replaceNote(n); return n;
+}
+async function guarded(fn) {
+  try { await fn(); }
+  catch (err) {
+    if (err instanceof AuthError) { if (S.notes.length) { S.expired = true; } else { S.auth = "out"; S.authMsg = "Your Google session ended. Sign in again."; } render(); toast("Your Google session ended."); }
+    else { console.error(err); toast(err.message || String(err)); }
+  }
+}
+
+/* ================= rendering bits ================= */
+const btn = (label, act, n, to = "", cls = "") => `<button class="btn xs ${cls}" data-act="${act}" data-id="${esc(n.fileId)}"${to ? ` data-to="${to}"` : ""}>${label}</button>`;
+const idChip = (n) => n.id ? `<span class="chip code">${esc(n.id)}</span>` : "";
+const laneChip = (n) => `<span class="chip">${esc(laneName(n.lane))}</span>`;
+const chChip = (n) => n.ch ? `<span class="chip" title="${esc(n.channel)}">${esc(CH[n.ch] || n.ch)}</span>` : "";
+const stChip = (n) => `<span class="st g-${ST_GROUP[n.status]}" title="${esc(n.statusRaw)}">${esc(n.status === "other" ? (n.statusRaw || "No status").slice(0, 28) : ST_NAME[n.status])}</span>`;
+const stepChip = (n) => n.awareness ? `<span class="step s${STEP[n.awareness].n}" title="${n.awStatus === "proposed" ? "Proposed by an agent" : "Awareness step"}">${esc(STEP[n.awareness].name)}${n.awStatus === "proposed" ? "?" : ""}</span>` : "";
+const empty = (t) => `<div class="empty">${t}</div>`;
+const more = (count, view) => `<button class="more" data-act="view" data-k="${view}">+ ${count} more</button>`;
+function row(n, actions = "") {
+  return `<div class="li"><div class="lt"><button class="t" data-act="open" data-id="${esc(n.fileId)}">${esc(n.title)}</button><div class="m">${idChip(n)}${S.lane === "all" ? laneChip(n) : ""}${chChip(n)}${stChip(n)}${stepChip(n)}${n.date ? `<span class="who">${fmtDate(n.date)}</span>` : ""}</div></div>${actions ? `<div class="row acts">${actions}</div>` : ""}</div>`;
+}
+function actionsFor(n) {
+  if (n.stage === "ideas") {
+    if (n.status === "new" || n.status === "refining") return btn("Approve", "status", n, "approved", "primary") + btn("Icebox", "status", n, "icebox") + btn("Dead", "status", n, "dead");
+    return btn("Back to new", "status", n, "new");
+  }
+  if (n.stage === "drafts") {
+    if (n.status === "record") return btn("I recorded it", "status", n, "edit", "primary");
+    if (n.status === "review") return btn("Approve to post", "approve", n, "", "primary");
+    if (n.status === "approved") return `<span class="chip ok">Approved to post</span>`;
+  }
+  return "";
+}
+function metricMini(n) {
+  const l = n.perf?.latest; const bits = [];
+  if (l) { const k = ["views", "impressions", "reach", "likes"].find((x) => l[x] != null); if (k) bits.push(`${fmtNum(l[k])} ${k}`); }
+  if (n.url) bits.push(`<a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">live</a>`);
+  return bits.length ? `<span class="who">${bits.join(" · ")}</span>` : "";
+}
+const head = (title, sub, extra = "") => `<div class="mhead"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ""}</div><div class="row">${extra}<span class="persp">${esc(S.lane === "all" ? "All lanes" : laneName(S.lane))}</span></div></div>`;
+
+/* ================= md (safe: everything is escaped first) ================= */
+function inline(s) {
+  let h = esc(s); const codes = [];
+  h = h.replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return `\u0000${codes.length - 1}\u0000`; });
+  h = h.replace(/!\[\[([^\]]+)\]\]/g, (_, t) => `<span class="wl">▣ ${t.split("|")[0]}</span>`);
+  h = h.replace(/\[\[([^\]]+)\]\]/g, (_, t) => { const [a, b] = t.split("|"); return `<span class="wl">${b || a}</span>`; });
+  h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, t, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`);
+  h = h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_, p, u) => `${p}<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+  h = h.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g, "$1<em>$2</em>").replace(/==([^=]+)==/g, "<mark>$1</mark>");
+  return h.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[+i]}</code>`);
+}
+function mdTable(rows) {
+  const sep = rows.length > 1 && rows[1].every((c) => /^:?-+:?$/.test(c));
+  const headRow = sep ? rows[0] : null, body = sep ? rows.slice(2) : rows;
+  return `<div class="tablewrap"><table class="t md">${headRow ? `<thead><tr>${headRow.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead>` : ""}<tbody>${body.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function md(src) {
+  const lines = src.replace(/%%[\s\S]*?%%/g, "").split(/\r?\n/); const out = []; let i = 0;
+  const LIST = /^\s*([-*+]|\d+[.)])\s+/, BLOCK = /^(#{1,6}\s|```|\s*\||\s*>|\s*([-*+]|\d+[.)])\s+)/;
+  while (i < lines.length) {
+    const l = lines[i]; let m;
+    if (/^```/.test(l)) { const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; out.push(`<pre class="code">${esc(buf.join("\n"))}</pre>`); continue; }
+    if ((m = /^(#{1,6})\s+(.*)$/.exec(l))) { const n = Math.min(6, m[1].length + 1); out.push(`<h${n} class="mdh">${inline(m[2])}</h${n}>`); i++; continue; }
+    if (/^\s*\|/.test(l)) { const rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++])); out.push(mdTable(rows)); continue; }
+    if (/^\s*>/.test(l)) { const buf = []; while (i < lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/, "")); out.push(`<blockquote>${md(buf.join("\n").replace(/^\[!(\w+)\][+-]?\s*/, "**$1** "))}</blockquote>`); continue; }
+    if (LIST.test(l)) {
+      const ordered = /^\s*\d/.test(l), items = [];
+      while (i < lines.length && LIST.test(lines[i])) {
+        let t = lines[i++].replace(LIST, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !LIST.test(lines[i])) t += ` ${lines[i++].trim()}`;
+        const cb = /^\[( |x|X)\]\s+/.exec(t);
+        items.push(cb ? `<li class="cb">${cb[1].trim() ? "☑" : "☐"} ${inline(t.slice(cb[0].length))}</li>` : `<li>${inline(t)}</li>`);
+      }
+      out.push(ordered ? `<ol>${items.join("")}</ol>` : `<ul>${items.join("")}</ul>`); continue;
+    }
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)) { out.push("<hr>"); i++; continue; }
+    if (!l.trim()) { i++; continue; }
+    const buf = [l]; i++;
+    while (i < lines.length && lines[i].trim() && !BLOCK.test(lines[i])) buf.push(lines[i++]);
+    out.push(`<p>${buf.map(inline).join("<br>")}</p>`);
+  }
+  return out.join("\n");
+}
+
+/* ================= screens ================= */
+function vToday() {
+  const N = scope(), t = isoToday();
+  const rec = N.filter((n) => n.stage === "drafts" && n.status === "record");
+  const rev = N.filter((n) => n.stage === "drafts" && n.status === "review");
+  const ideas = N.filter((n) => n.stage === "ideas" && (n.status === "new" || n.status === "refining"));
+  const appr = N.filter((n) => n.stage === "ideas" && n.status === "approved");
+  const prod = N.filter((n) => n.stage === "drafts" && ["copy", "visual", "edit", "other"].includes(n.status)).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const ready = N.filter((n) => n.stage === "ready");
+  const posted = N.filter((n) => n.stage === "posted" && n.postedAt).sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+  const sched = N.filter((n) => n.scheduledAt && n.scheduledAt >= t && n.stage !== "posted").sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+  const due = N.filter((n) => n.checkpoints.some((c) => c.date === t));
+  const kpi = (big, label, sub, view) => `<button class="card kpi" data-act="view" data-k="${view}"><span class="eyebrow">${label}</span><span class="big">${big}</span><span class="sub">${sub}</span></button>`;
+  const coming = [
+    ...sched.map((n) => row(n, `<span class="who">Scheduled ${fmtDate(n.scheduledAt)}</span>`)),
+    ...N.filter((n) => n.stage === "drafts" && n.status === "approved").map((n) => row(n, `<span class="who">Approved, waiting for the publish checklist</span>`)),
+    ...ready.filter((n) => !n.scheduledAt).map((n) => row(n, `<span class="who">Ready to post</span>`)),
+    ...due.map((n) => row(n, `<span class="who">${esc(n.checkpoints.find((c) => c.date === t).label)} reading today</span>`)),
+  ];
+  return head("Today", "What needs you, read live from your notes in Drive.") + `
+  <div class="grid4">
+    ${kpi(rec.length + rev.length, "Needs you", `${rec.length} to record · ${rev.length} to review`, "pipeline")}
+    ${kpi(ideas.length, "Ideas to decide", `${appr.length} approved, waiting for a draft`, "ideas")}
+    ${kpi(prod.length, "In production", "Claude is writing, designing or editing", "pipeline")}
+    ${kpi(posted.filter((n) => daysAgo(n.postedAt) <= 30).length, "Posted, 30 days", `${ready.length} ready to post`, "measure")}
+  </div>
+  <div class="grid2">
+    <section class="card"><h3>Needs you</h3><div class="list">${[...rev, ...rec].map((n) => row(n, actionsFor(n))).join("") || empty("Nothing is waiting on you.")}</div></section>
+    <section class="card"><h3>Coming up</h3><div class="list">${coming.join("") || empty("Nothing scheduled or ready.")}</div></section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h3>In production</h3><div class="list">${prod.slice(0, 10).map((n) => row(n)).join("") || empty("Nothing in production.")}${prod.length > 10 ? more(prod.length - 10, "pipeline") : ""}</div></section>
+    <section class="card"><h3>Recently posted</h3><div class="list">${posted.slice(0, 8).map((n) => row(n, metricMini(n))).join("") || empty("Nothing posted yet.")}</div></section>
+  </div>`;
+}
+
+const IDEA_TABS = [["open", "To decide", (n) => n.status === "new" || n.status === "refining"], ["approved", "Approved", (n) => n.status === "approved"], ["shelf", "Icebox & dead", (n) => n.status === "icebox" || n.status === "dead"], ["all", "All", () => true]];
+function ideaList() {
+  const tab = IDEA_TABS.find((x) => x[0] === S.f.it) || IDEA_TABS[0];
+  let L = scope().filter((n) => n.stage === "ideas").filter(tab[2]);
+  if (S.f.who) L = L.filter((n) => n.who === S.f.who);
+  if (S.f.q) { const s = S.f.q.toLowerCase(); L = L.filter((n) => `${n.title}\n${n.body}`.toLowerCase().includes(s)); }
+  L.sort((a, b) => (b.date || "").localeCompare(a.date || "") || a.title.localeCompare(b.title));
+  return L.slice(0, 300).map((n) => row(n, actionsFor(n))).join("") || empty("No ideas here.");
+}
+function vIdeas() {
+  const all = scope().filter((n) => n.stage === "ideas");
+  const whos = [...new Set(all.map((n) => n.who).filter(Boolean))].sort();
+  return head("Ideas", "Every idea note in the lanes' <span class=\"mono\">01 IDEAS</span> folders. Approve, icebox or kill one and its <span class=\"mono\">status:</span> line changes in the note; Claude's daily content task turns approved ideas into drafts.", `<button class="btn primary" data-act="view" data-k="studio">New idea</button>`) + `
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="Idea status">${IDEA_TABS.map(([k, l, fn]) => `<button data-act="itab" data-k="${k}" aria-pressed="${S.f.it === k}">${l} <span class="mono">${all.filter(fn).length}</span></button>`).join("")}</div>
+    <select data-in="who" aria-label="Whose ideas"><option value="">Anyone's</option>${whos.map((w) => `<option value="${esc(w)}" ${S.f.who === w ? "selected" : ""}>${esc(w)}</option>`).join("")}</select>
+    <input type="search" data-in="q" placeholder="Search ideas" value="${esc(S.f.q)}" aria-label="Search ideas">
+  </div>
+  <section class="card"><div class="list" id="idea-list">${ideaList()}</div></section>`;
+}
+
+const COLS = [
+  ["Approved ideas", "Next for Claude's daily task", (n) => n.stage === "ideas" && n.status === "approved"],
+  ["Copy & visual", "Claude writes and designs", (n) => n.stage === "drafts" && ["copy", "visual"].includes(n.status)],
+  ["Record, edit, review", "Record and review are yours", (n) => n.stage === "drafts" && ["record", "edit", "review"].includes(n.status)],
+  ["Approved & ready", "Approved drafts, then 03 READY TO POST", (n) => n.stage === "ready" || (n.stage === "drafts" && n.status === "approved")],
+  ["Posted, 30 days", "04 POSTED", (n) => n.stage === "posted" && n.postedAt && daysAgo(n.postedAt) <= 30],
+  ["Parked", "The bank: comes back when the lane has room", (n) => n.stage === "drafts" && (n.status === "parked" || n.status === "other")],
+];
+const card = (n) => `<button class="pc" data-act="open" data-id="${esc(n.fileId)}"><span class="pt">${esc(n.title)}</span><span class="pm">${idChip(n)}${S.lane === "all" ? laneChip(n) : ""}${chChip(n)}${stChip(n)}${stepChip(n)}</span>${(n.postedAt || n.scheduledAt || n.date) ? `<span class="from">${fmtDate(n.postedAt || n.scheduledAt || n.date)}</span>` : ""}</button>`;
+function vPipeline() {
+  const N = scope(); const chs = [...new Set(N.filter((n) => n.stage !== "ideas").map((n) => n.ch).filter(Boolean))].sort();
+  const fl = (n) => !S.f.ch || n.ch === S.f.ch;
+  return head("Pipeline", "Every piece by stage. Folders and <span class=\"mono\">status:</span> lines from your notes; Claude moves notes between folders.") + `
+  <div class="toolbar"><select data-in="ch" aria-label="Channel"><option value="">All channels</option>${chs.map((c) => `<option value="${c}" ${S.f.ch === c ? "selected" : ""}>${esc(CH[c] || c)}</option>`).join("")}</select></div>
+  <div class="board">${COLS.map(([label, sub, fn]) => {
+    const L = N.filter(fn).filter(fl).sort((a, b) => (b.postedAt || b.date || "").localeCompare(a.postedAt || a.date || ""));
+    return `<div class="col"><h3>${label}<span class="n">${L.length}</span></h3><div class="sub">${sub}</div>${L.slice(0, 60).map(card).join("")}${L.length > 60 ? `<div class="who">+ ${L.length - 60} more</div>` : ""}</div>`;
+  }).join("")}</div>`;
+}
+
+function vCalendar() {
+  const N = scope(); const ev = [];
+  for (const n of N) {
+    if (n.postedAt && n.postedAt.startsWith(S.month)) ev.push({ d: n.postedAt, n, k: "Posted" });
+    if (n.scheduledAt && n.scheduledAt.startsWith(S.month) && n.stage !== "posted") ev.push({ d: n.scheduledAt, n, k: "Scheduled" });
+  }
+  ev.sort((a, b) => a.d.localeCompare(b.d));
+  const days = []; for (const e of ev) { const last = days[days.length - 1]; if (last && last[0] === e.d) last[1].push(e); else days.push([e.d, [e]]); }
+  const readings = N.reduce((a, n) => a + n.checkpoints.filter((c) => c.date.startsWith(S.month)).length, 0);
+  const [y, m] = S.month.split("-").map(Number); const label = new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month:"long", year:"numeric" });
+  return head("Calendar", "Posted dates (<span class=\"mono\">posted_at</span>) and scheduled posts (<span class=\"mono\">scheduled_at</span>) from your notes.", `<button class="btn xs" data-act="month" data-k="-1" aria-label="Previous month">←</button><b>${label}</b><button class="btn xs" data-act="month" data-k="1" aria-label="Next month">→</button>`) + `
+  <section class="card"><div class="agenda">${days.map(([d, items]) => `<div class="day ${d === isoToday() ? "today" : ""}"><div class="dl">${fmtDay(d)}</div><div class="list">${items.map((e) => row(e.n, `<span class="st ${e.k === "Posted" ? "g-pub" : "g-pack"}">${e.k}</span>`)).join("")}</div></div>`).join("") || empty("Nothing posted or scheduled this month.")}</div>
+  <p class="small muted" style="margin-top:12px">${readings} performance readings (D1 to D90) fall in this month.</p></section>`;
+}
+
+function vJourney() {
+  const N = scope().filter((n) => n.stage !== "ideas");
+  const chs = [...new Set(N.map((n) => n.ch).filter(Boolean))].sort();
+  const tagged = N.filter((n) => n.awareness).length;
+  const cnt = (step, ch) => N.filter((n) => (step ? n.awareness === step : !n.awareness) && (!ch || n.ch === ch)).length;
+  const cell = (step, ch) => { const c = cnt(step, ch), k = `${step || "none"}|${ch}`; return `<td><button class="cell ${c ? "" : "zero"}" data-act="jcell" data-k="${k}" aria-pressed="${S.jcell === k}"><b>${c}</b></button></td>`; };
+  const stepRow = (s) => { const total = cnt(s.key, ""); return `<tr><th class="rowhead" scope="row"><span class="step s${s.n}">${s.n}. ${s.name}</span></th>${chs.map((c) => cell(s.key, c)).join("")}${cell(s.key, "")}<td><div class="bar" title="${tagged ? Math.round(total / tagged * 100) : 0}% of tagged pieces"><i style="width:${tagged ? Math.round(total / tagged * 100) : 0}%"></i></div></td></tr>`; };
+  let picked = "";
+  if (S.jcell) {
+    const [step, ch] = S.jcell.split("|");
+    const L = N.filter((n) => (step === "none" ? !n.awareness : n.awareness === step) && (!ch || n.ch === ch));
+    picked = `<section class="card"><h3>${step === "none" ? "No step yet" : esc(STEP[step].name)}${ch ? ` · ${esc(CH[ch] || ch)}` : ""}: ${L.length}</h3><div class="list">${L.slice(0, 80).map((n) => row(n)).join("") || empty("None.")}</div></section>`;
+  }
+  return head("Journey", `Pieces by awareness step and channel. <b>${tagged} of ${N.length}</b> pieces have a step; set one in a piece's panel (it adds <span class="mono">awareness:</span> to the note).`) + `
+  <section class="card"><div class="tablewrap"><table class="jt"><thead><tr><th>Step</th>${chs.map((c) => `<th>${esc(CH[c] || c)}</th>`).join("")}<th>Total</th><th>Share</th></tr></thead><tbody>
+    ${BANDS.map((b) => `<tr class="bandrow"><td colspan="${chs.length + 3}"><span>${b}</span></td></tr>${STEPS.filter((s) => s.band === b).map(stepRow).join("")}`).join("")}
+    <tr class="bandrow"><td colspan="${chs.length + 3}"><span>Not tagged</span></td></tr>
+    <tr><th class="rowhead" scope="row"><span class="st">No step yet</span></th>${chs.map((c) => cell("", c)).join("")}${cell("", "")}<td></td></tr>
+  </tbody></table></div></section>${picked}`;
+}
+
+const MCOLS = [["title", "Piece"], ["ch", "Channel"], ["postedAt", "Posted"], ["reading", "Reading"], ["views", "Views"], ["reach", "Reach"], ["likes", "Likes"], ["comments", "Comments"], ["saves", "Saves"], ["shares", "Shares"], ["follows", "Follows"]];
+const mval = (n, k) => k === "title" ? n.title : k === "ch" ? (CH[n.ch] || n.ch) : k === "postedAt" ? n.postedAt : k === "reading" ? (n.perf?.latest?.label || "") : (n.perf?.latest?.[k] ?? null);
+function vMeasure() {
+  const N = scope().filter((n) => n.stage === "posted");
+  const { key, dir } = S.sort;
+  const L = [...N].sort((a, b) => { const x = mval(a, key), y = mval(b, key); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * dir; });
+  const by = {}; for (const n of N) { const c = n.ch || "—"; (by[c] ||= { n: 0, read: 0, views: 0 }); by[c].n++; const l = n.perf?.latest; if (l) { by[c].read++; by[c].views += l.views || l.impressions || 0; } }
+  const isNum = (k) => !["title", "ch", "postedAt", "reading"].includes(k);
+  return head("Measure", "The latest reading in each posted note's Performance table, filled by the Post performance check task.") + `
+  <div class="grid4">${Object.entries(by).sort((a, b) => b[1].n - a[1].n).slice(0, 8).map(([c, v]) => `<div class="card kpi" style="cursor:default"><span class="eyebrow">${esc(CH[c] || c)}</span><span class="big">${fmtNum(v.views)}</span><span class="sub">views across ${v.read} of ${v.n} posts with a reading</span></div>`).join("") || `<div class="card">${empty("Nothing posted yet.")}</div>`}</div>
+  <section class="card"><div class="tablewrap"><table class="t"><thead><tr>${MCOLS.map(([k, l]) => `<th class="${isNum(k) ? "num" : ""}"><button data-act="sort" data-k="${k}">${l}${key === k ? (dir > 0 ? " ↑" : " ↓") : ""}</button></th>`).join("")}</tr></thead><tbody>
+  ${L.map((n) => `<tr class="click" data-act="open" data-id="${esc(n.fileId)}">${MCOLS.map(([k]) => { const v = mval(n, k); return `<td class="${isNum(k) ? "num" : ""}">${k === "title" ? `${n.id ? `<span class="who">${esc(n.id)}</span><br>` : ""}${esc(v)}` : k === "postedAt" ? fmtDate(v) : isNum(k) ? fmtNum(v) : esc(v || "—")}</td>`; }).join("")}</tr>`).join("")}
+  </tbody></table></div></section>`;
+}
+
+function vStudio() {
+  const def = S.lane !== "all" ? S.lane : (S.lanes[0]?.key || "none");
+  const formats = ["Reel", "Carousel", "Post", "Text post + quote card", "Long video", "Short", "Thread", "Live workshop", "Email", "Podcast episode"];
+  return head("New idea", `Write it the way you'd say it. It's saved in your own words as an idea note in the lane's <span class="mono">01 IDEAS/${esc(CONFIG.ownerIdeas)}</span> folder. Once it's approved, Claude's daily content task turns it into a draft.`) + `
+  <form class="card form" id="studio-form" autocomplete="off">
+    <div class="grid2">
+      <div class="field"><label for="f-lane">Lane</label><select id="f-lane" name="lane">${S.lanes.map((l) => `<option value="${esc(l.key)}" ${l.key === def ? "selected" : ""}>${esc(l.name)}${l.lang ? ` (${esc(l.lang)})` : ""}</option>`).join("")}<option value="none" ${def === "none" ? "selected" : ""}>No lane yet</option></select></div>
+      <div class="field"><label for="f-step">Awareness step (optional)</label><select id="f-step" name="step"><option value="">Not sure yet</option>${STEPS.map((s) => `<option value="${s.key}">${s.n}. ${s.name}: ${s.knows}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="f-title">Working title</label><input id="f-title" name="title" type="text" required maxlength="120" placeholder="The one-line version"></div>
+    <div class="field"><label for="f-text">The idea</label><textarea id="f-text" name="text" rows="7" placeholder="What happened, what people should get from it, a phrase you'd say…"></textarea></div>
+    <div class="grid3">
+      <div class="field"><label for="f-ch">Channel (optional)</label><input id="f-ch" name="channel" type="text" list="dl-ch" placeholder="Instagram, YouTube…"></div>
+      <div class="field"><label for="f-format">Format (optional)</label><input id="f-format" name="format" type="text" list="dl-format" placeholder="Reel, carousel, long video…"></div>
+      <div class="field"><label for="f-offer">Leads to (optional)</label><input id="f-offer" name="offer" type="text" placeholder="The offer it points to"></div>
+    </div>
+    <datalist id="dl-ch">${Object.values(CH).map((c) => `<option value="${esc(c)}">`).join("")}</datalist>
+    <datalist id="dl-format">${formats.map((c) => `<option value="${esc(c)}">`).join("")}</datalist>
+    <label class="check"><input type="checkbox" name="approve"> Approve it now (it goes straight to Claude's next draft run)</label>
+    <div class="row"><button class="btn primary" type="submit">Save to my OS</button><span class="small muted">Creates one new note. Nothing else changes.</span></div>
+  </form>
+  <section class="card"><h3>What happens next</h3><ol class="steps"><li>The note appears in Obsidian and in Drive within a minute or so.</li><li>Approved ideas show in Pipeline under "Approved ideas".</li><li>Claude's daily content task (06:52) writes the draft: hook, copy, caption, visual brief.</li><li>You record (video) and approve to post from Today; Claude moves it to Ready.</li></ol></section>`;
+}
+
+function vSettings() {
+  return head("Settings", "") + `
+  <div class="grid2">
+    <section class="card"><h3>Google account</h3><p>${S.email ? `Signed in as <b>${esc(S.email)}</b>.` : "Signed in."} The page talks to Google Drive directly from this browser, with your own access. No other server sees your notes.</p><div class="row" style="margin-top:10px"><button class="btn" data-act="refresh">Read Drive again</button><button class="btn" data-act="signout">Sign out</button></div></section>
+    <section class="card"><h3>Where it reads</h3><p>My Drive › ${esc(CONFIG.rootFolder)} › ${esc(CONFIG.contentFolder)}: ${S.lanes.length} lanes, ${S.notes.length} notes.</p><p class="small muted" style="margin-top:6px">Last read ${S.loadedAt ? ago(S.loadedAt) : "—"}. It reads again when you come back to the page after 5 minutes away, and with "Read Drive again".</p></section>
+    <section class="card"><h3>What it changes in your notes</h3><ul class="small"><li>An idea's <span class="mono">status:</span> (approve, icebox, dead, back to new).</li><li>A draft's <span class="mono">status:</span>, and <span class="mono">approved:</span> when you approve it to post.</li><li>A piece's <span class="mono">awareness:</span> step.</li><li>New idea notes you write in New idea.</li></ul><p class="small muted">It never moves, renames or deletes a note, and never touches the text below the properties. Every change can be undone from the message that confirms it.</p></section>
+    <section class="card"><h3>This device</h3><p class="small">A copy of your notes is kept in this browser so the page opens fast and works with a weak connection. "Forget this device" deletes that copy and signs out; use it on a computer that isn't yours.</p><div class="row" style="margin-top:10px"><button class="btn" data-act="forget">Forget this device</button></div></section>
+  </div>`;
+}
+
+function vSignIn() {
+  const cid = clientId();
+  return `<div class="signin"><div class="brand big">Wide Hook <span>Studio</span></div>
+    <p>Your content system, read live from your OS in Google Drive.</p>
+    ${S.authMsg ? `<p class="flag">${esc(S.authMsg)}</p>` : ""}
+    ${MOCK_API ? `<button class="btn primary big" data-act="signin">Open the test data</button>`
+      : cid ? `<button class="btn primary big" data-act="signin">Sign in with Google</button><p class="small muted">Use the Google account whose My Drive holds the ${esc(CONFIG.rootFolder)} folder.</p>`
+      : `<form id="client-form" class="card form" style="width:100%"><p class="small">This copy doesn't have its Google client ID yet. Paste it once (it ends in <span class="mono">.apps.googleusercontent.com</span>); it's kept in this browser.</p><input name="cid" type="text" required placeholder="1234-abc.apps.googleusercontent.com" aria-label="Google client ID"><div><button class="btn primary" type="submit">Save</button></div></form>`}
+  </div>`;
+}
+
+/* ================= shell ================= */
+const VIEWS = {
+  today: { name: "Today", group: "Plan", render: vToday },
+  ideas: { name: "Ideas", group: "Plan", render: vIdeas },
+  journey: { name: "Journey", group: "Plan", render: vJourney },
+  studio: { name: "New idea", group: "Make", render: vStudio },
+  pipeline: { name: "Pipeline", group: "Make", render: vPipeline },
+  calendar: { name: "Calendar", group: "Make", render: vCalendar },
+  measure: { name: "Measure", group: "Learn", render: vMeasure },
+  settings: { name: "Settings", group: "Studio", render: vSettings },
+};
+function syncBox() {
+  if (S.loading) return `<span class="small"><span class="spin"></span> ${esc(S.progress || "Reading Drive…")}</span>`;
+  return `<span class="small muted">${S.loadedAt ? `Read ${ago(S.loadedAt)}${S.fromCache ? " (saved copy)" : ""}` : "Not read yet"}</span><button class="btn xs" data-act="refresh">Refresh</button>`;
+}
+function side() {
+  const N = scope();
+  const needs = N.filter((n) => n.stage === "drafts" && (n.status === "record" || n.status === "review")).length;
+  const open = N.filter((n) => n.stage === "ideas" && (n.status === "new" || n.status === "refining")).length;
+  const badge = { today: needs ? `<span class="n hot">${needs}</span>` : "", ideas: open ? `<span class="n">${open}</span>` : "" };
+  const lanes = [["all", "All lanes", "", S.notes.length], ...S.lanes.map((l) => [l.key, l.name, l.lang, S.notes.filter((n) => n.lane === l.key).length])];
+  const groups = {}; for (const [k, v] of Object.entries(VIEWS)) (groups[v.group] ||= []).push([k, v]);
+  return `<aside class="side" aria-label="Perspective and screens">
+    <div class="brand">Wide Hook <span>Studio</span></div>
+    <div><div class="eyebrow">Perspective</div><div class="lanes">${lanes.map(([k, n, lang, c]) => `<button class="lane" data-act="lane" data-k="${esc(k)}" aria-pressed="${S.lane === k}"><b>${esc(n)}</b><span class="mono">${esc(lang)} ${c}</span></button>`).join("")}</div></div>
+    <nav class="nav" aria-label="Screens">${Object.entries(groups).map(([g, items]) => `<div class="navgroup">${g}</div>${items.map(([k, v]) => `<button class="navbtn" data-act="view" data-k="${k}" ${S.view === k ? 'aria-current="page"' : ""}><span>${v.name}</span>${badge[k] || ""}</button>`).join("")}`).join("")}</nav>
+    <div class="sync" id="sync">${syncBox()}</div>
+  </aside>`;
+}
+function render() {
+  const app = document.getElementById("app");
+  if (S.auth !== "in") { app.innerHTML = vSignIn(); renderDrawer(); return; }
+  const banners = `${MOCK_API ? `<div class="banner test"><span>Test mode: fake Drive at ${esc(API)}. Your real notes are not touched.</span></div>` : ""}${S.expired ? `<div class="banner warn"><span>Your Google session ended. What you see is from ${S.loadedAt ? ago(S.loadedAt) : "earlier"}; changes need a new sign-in.</span><button class="btn xs" data-act="signin">Sign in again</button></div>` : ""}`;
+  const main = S.notes.length ? VIEWS[S.view].render() : `<div class="card loading" id="loadmsg"><span class="spin"></span> ${esc(S.progress || "Reading your OS in Drive…")}</div>`;
+  app.innerHTML = `${banners}<div class="app">${side()}<main class="main" id="main">${main}</main></div>`;
+  renderDrawer();
+}
+function renderStatus() {
+  const el = document.getElementById("sync"); if (el) el.innerHTML = syncBox();
+  const lm = document.getElementById("loadmsg"); if (lm) lm.innerHTML = `<span class="spin"></span> ${esc(S.progress || "Reading your OS in Drive…")}`;
+  if (!el && !lm && S.auth === "in") render();
+}
+function renderDrawer() {
+  const root = document.getElementById("drawer-root");
+  const n = S.open && S.auth === "in" ? S.notes.find((x) => x.fileId === S.open) : null;
+  if (!n) { root.innerHTML = ""; document.body.style.overflow = ""; return; }
+  document.body.style.overflow = "hidden";
+  const editable = n.stage === "ideas" || n.stage === "drafts";
+  const vocab = n.stage === "ideas" ? IDEA_ST : DRAFT_ST;
+  const cur = vocab.includes(n.status) ? n.status : "";
+  const decide = editable ? `
+    <div class="field"><label for="d-status">Status</label><div class="row"><select id="d-status">${cur ? "" : `<option value="" selected>${esc(n.statusRaw || "No status")}</option>`}${vocab.map((s) => `<option value="${s}" ${s === cur ? "selected" : ""}>${ST_NAME[s]}</option>`).join("")}</select><button class="btn xs" data-act="savestatus" data-id="${esc(n.fileId)}">Save</button></div></div>
+    ${n.stage === "drafts" ? (n.status === "approved" ? `<p class="small"><span class="chip ok">Approved to post</span> ${esc(n.approved)}</p>` : n.status === "review" ? `<div><button class="btn primary" data-act="approve" data-id="${esc(n.fileId)}">Approve to post</button><p class="small muted" style="margin-top:4px">Sets <span class="mono">status: approved</span> and the date. Claude's daily task runs the publish checklist and moves it to 03 READY TO POST.</p></div>` : "") : ""}
+    ${actionsFor(n) && n.stage === "ideas" ? `<div class="row">${actionsFor(n)}</div>` : ""}`
+    : `<p class="small muted">${n.stage === "ready" ? "Ready to post. Claude moved it here after the publish checklist." : "Posted. The Post performance check task fills its readings."}</p>`;
+  const stepSel = `<div class="field"><label for="d-step">Awareness step</label><div class="row"><select id="d-step"><option value="">No step yet</option>${STEPS.map((s) => `<option value="${s.key}" ${n.awareness === s.key ? "selected" : ""}>${s.n}. ${s.name}</option>`).join("")}</select><button class="btn xs" data-act="savestep" data-id="${esc(n.fileId)}">Save</button></div>${n.awareness && n.awStatus === "proposed" ? `<p class="small muted">Proposed by an agent. Saving confirms it.</p>` : ""}</div>`;
+  const l = n.perf?.latest;
+  const metrics = l ? `<section class="card"><h3>Latest reading${l.label ? `: ${esc(l.label)}` : ""}</h3><div class="metrics">${METRICS.filter(([k]) => l[k] != null).map(([k, , label]) => `<div><b>${fmtNum(l[k])}</b><span>${label}</span></div>`).join("")}</div>${l.date ? `<p class="small muted" style="margin-top:6px">Read ${fmtDate(l.date)}</p>` : ""}</section>` : "";
+  const props = Object.entries(n.fm).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(Array.isArray(v) ? v.join(", ") : v).replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, "$1") || "—"}</dd>`).join("");
+  const body = n.body.replace(/^\s*#\s+.+\r?\n?/, "");
+  const obs = `obsidian://open?vault=${encodeURIComponent(CONFIG.obsidianVault)}&file=${encodeURIComponent(n.path.replace(/\.md$/i, ""))}`;
+  root.innerHTML = `<div class="drawer" data-act="closebg"><div class="dpanel" role="dialog" aria-modal="true" aria-label="${esc(n.title)}">
+    <div class="dhead"><div style="min-width:0;flex:1 1 320px"><div class="row">${idChip(n)}${laneChip(n)}${chChip(n)}${stChip(n)}${stepChip(n)}</div><h2>${esc(n.title)}</h2><div class="who" style="margin-top:4px;overflow-wrap:anywhere">${esc(n.path)}</div></div>
+      <div class="row"><a class="btn xs" href="https://drive.google.com/file/d/${encodeURIComponent(n.fileId)}/view" target="_blank" rel="noopener noreferrer">Open in Drive</a><a class="btn xs" href="${esc(obs)}">Open in Obsidian</a><button class="btn xs" data-act="close">Close</button></div></div>
+    <div class="dgrid">
+      <article class="card mdbody">${md(body) || empty("This note has no text yet.")}</article>
+      <div class="dside">
+        <section class="card form"><h3>Decide</h3>${decide}${stepSel}</section>
+        ${metrics}
+        <details class="card"><summary><b>Properties</b> <span class="who">${Object.keys(n.fm).length}</span></summary><dl class="props" style="margin-top:8px">${props}</dl></details>
+      </div>
+    </div></div></div>`;
+}
+let toastTimer = 0;
+function toast(msg, opts = {}) {
+  const root = document.getElementById("toast-root");
+  root.innerHTML = `<div class="toast" role="status"><span>${esc(msg)}</span>${opts.undo ? `<button class="btn xs" data-act="undo">Undo</button>` : ""}</div>`;
+  S.undo = opts.undo || null; clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { root.innerHTML = ""; S.undo = null; }, opts.undo ? 12000 : 4000);
+}
+
+/* ================= events ================= */
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const a = t.dataset.act, k = t.dataset.k;
+  const note = t.dataset.id ? S.notes.find((n) => n.fileId === t.dataset.id) : null;
+  switch (a) {
+    case "signin": return guarded(async () => { await signIn(); S.auth = "in"; S.expired = false; S.authMsg = ""; render(); await whoami(); await showCache(); await loadAll(); });
+    case "lane": S.lane = k; ls.set("whs.lane", k); S.f.ch = ""; S.f.who = ""; S.jcell = null; return render();
+    case "view": S.view = k; S.open = null; history.replaceState(null, "", `#${k}`); render(); return window.scrollTo({ top: 0 });
+    case "open": S.open = t.dataset.id; return renderDrawer();
+    case "close": S.open = null; return renderDrawer();
+    case "closebg": if (e.target === t) { S.open = null; renderDrawer(); } return;
+    case "status": return write(note, { status: t.dataset.to }, ST_NAME[t.dataset.to]);
+    case "savestatus": { const v = document.getElementById("d-status")?.value; if (v) write(note, { status: v }, ST_NAME[v]); return; }
+    case "approve": return write(note, { status: "approved", approved: `${isoToday()} (Eduardo, Wide Hook Studio)` }, "Approved to post");
+    case "savestep": { const v = document.getElementById("d-step")?.value; return write(note, v ? { awareness: v, awareness_status: "confirmed" } : { awareness: null, awareness_status: null }, v ? `Step: ${STEP[v].name}` : "Step removed"); }
+    case "refresh": return guarded(loadAll);
+    case "signout": TOKEN = null; ss.del("whs.token"); S.auth = "out"; S.notes = []; S.lanes = []; S.loadedAt = null; S.open = null; S.authMsg = ""; return render();
+    case "forget": return guarded(async () => {
+      if (!confirm("Delete this browser's copy of your notes and sign out? Your notes in Drive are not touched.")) return;
+      try { if (!MOCK_API && TOKEN && window.google?.accounts?.oauth2) google.accounts.oauth2.revoke(TOKEN, () => {}); } catch {}
+      await idb.clear(); ["whs.lane", "whs.email", "whs.clientId"].forEach((x) => ls.del(x)); TOKEN = null; ss.del("whs.token");
+      S.auth = "out"; S.notes = []; S.lanes = []; S.loadedAt = null; S.email = ""; S.lane = "all"; render(); toast("This device forgot your notes.");
+    });
+    case "month": { const [y, m] = S.month.split("-").map(Number); const d = new Date(y, m - 1 + Number(k), 1); S.month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; return render(); }
+    case "itab": S.f.it = k; return render();
+    case "jcell": S.jcell = S.jcell === k ? null : k; return render();
+    case "sort": S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : (["title", "ch", "reading"].includes(k) ? 1 : -1) }; return render();
+    case "undo": { const u = S.undo; S.undo = null; if (u) u(); return; }
+  }
+});
+document.addEventListener("input", (e) => {
+  if (e.target.dataset?.in !== "q") return;
+  S.f.q = e.target.value; const el = document.getElementById("idea-list"); if (el) el.innerHTML = ideaList();
+});
+document.addEventListener("change", (e) => {
+  const k = e.target.dataset?.in; if (k === "who") { S.f.who = e.target.value; render(); } else if (k === "ch") { S.f.ch = e.target.value; render(); }
+});
+document.addEventListener("submit", (e) => {
+  if (e.target.id === "client-form") {
+    e.preventDefault(); const v = String(new FormData(e.target).get("cid") || "").trim();
+    if (!/\.apps\.googleusercontent\.com$/.test(v)) return toast("That doesn't look like a Google client ID.");
+    ls.set("whs.clientId", v); render(); return;
+  }
+  if (e.target.id !== "studio-form") return;
+  e.preventDefault(); if (S.busy) return toast("Still saving…");
+  const fd = new FormData(e.target); const get = (x) => String(fd.get(x) || "").trim();
+  const f = { lane: get("lane"), title: get("title"), text: get("text"), step: get("step"), channel: get("channel"), format: get("format"), offer: get("offer"), approve: fd.get("approve") === "on" };
+  if (!f.title) return toast("Give it a working title.");
+  const form = e.target; S.busy = true; toast("Saving the idea…");
+  guarded(async () => { try { const n = await createIdea(f); form.reset(); S.open = n.fileId; render(); toast(`Saved: ${n.name}`); } finally { S.busy = false; } });
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.open) { S.open = null; renderDrawer(); } });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && S.auth === "in" && !S.expired && !S.busy && S.loadedAt && Date.now() - new Date(S.loadedAt) > 5 * 60e3) guarded(loadAll);
+});
+
+/* ================= start ================= */
+(async function boot() {
+  const h = location.hash.slice(1); if (VIEWS[h]) S.view = h;
+  if (restoreToken()) { S.auth = "in"; render(); await guarded(async () => { await showCache(); whoami().catch(() => {}); await loadAll(); }); }
+  else render();
+})();
+})();
+</script>
+</body>
+</html>
