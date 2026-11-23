@@ -246,6 +246,56 @@ table.md{font-size:12.5px}
 @media (prefers-reduced-motion:no-preference){.spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.dpanel{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:var(--bg);padding:8px 10px 8px 16px;border-radius:999px;font-size:13px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow);display:flex;gap:10px;align-items:center}
 .toast .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+/* ---- screens ported from the prototype (23 Nov 2026) ---- */
+:root{--board:#1b2925;--on-board:#e8efeb;--on-board-2:#a9bbb4;--chalk:#f5c400;--paid:#5b3fa8;--paid-soft:#ece7f8}
+.spread{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.mhead .persp{display:inline-block;margin-bottom:6px}
+.cell{gap:8px}
+.cell span{font-size:11.5px;color:var(--muted);line-height:1.2}
+.cell.paid{border-color:var(--paid)}
+.chip.paid{border-color:transparent;background:var(--paid-soft);color:var(--paid)}
+.flag.sm{padding:2px 6px;font-size:11px;border-radius:5px}
+.flag.under{background:var(--warn-soft);color:var(--warn)}
+.step.prop{outline:2px dashed var(--warn);outline-offset:1px}
+.funnelv{display:flex;flex-direction:column;align-items:center;gap:4px}
+.fband{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;border-radius:8px;padding:9px 14px;max-width:100%}
+.fband b{font-size:14px}
+.fband .fs{font:500 11px/1.35 var(--f-mono);opacity:.9}
+.fband .fn{font-family:var(--f-display);font-size:24px;line-height:1;text-align:right}
+@media (max-width:640px){.fband{width:100%!important}}
+.fh{display:flex;flex-direction:column;gap:3px}
+.fh small{font:400 10.5px/1.3 var(--f-body);text-transform:none;letter-spacing:0;color:var(--muted)}
+.share{display:flex;flex-direction:column;gap:4px;min-width:110px;padding:4px 0 4px 6px}
+.map{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px}
+@media (max-width:1000px){.map{grid-template-columns:minmax(0,1fr)}}
+.layer{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.layer h3{font-size:15px}
+.layer.you{background:var(--marker);color:var(--on-marker)}
+.layer.you .eyebrow{color:var(--on-marker)}
+.layer.ui{background:var(--board);color:var(--on-board)}
+.layer.ui .eyebrow{color:var(--on-board-2)}
+.layer.agents{background:var(--surface);border:1px solid var(--line)}
+.layer.os{background:var(--surface);border:2px solid var(--ink)}
+.layer.data{background:var(--paid-soft);color:var(--ink)}
+.arrowdown{text-align:center;font:500 11px/1.3 var(--f-mono);color:var(--muted);padding:2px 0}
+.loop{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.loop .mod{background:rgb(255 255 255 / .08);border:1px solid rgb(232 239 235 / .25);border-radius:8px;padding:7px 10px;cursor:pointer;color:var(--on-board);text-align:left}
+.loop .mod b{display:block;font-size:13px}
+.loop .mod span{font-size:11.5px;color:var(--on-board-2)}
+.loop .mod:hover{border-color:var(--chalk)}
+.loop .arr{color:var(--chalk);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12.5px;background:var(--surface-2)}
+.layer.you .pill{background:rgb(255 255 255 / .55);border-color:transparent}
+.layer.data .pill{background:var(--surface)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:5px 10px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.sugg button:hover{border-color:var(--accent)}
+.good{color:var(--good);font-weight:600} .badv{color:var(--bad);font-weight:600}
+.log{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.log > div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px}
+.log button{all:unset;cursor:pointer;font-weight:600}
+.log button:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -281,17 +331,42 @@ const clientId = () => CONFIG.clientId || ls.get("whs.clientId") || "";
 
 /* ================= vocabulary ================= */
 const STEPS = [
-  { key:"unaware", name:"Unaware", band:"Awareness", knows:"doesn't feel the problem" },
-  { key:"situation", name:"Situation", band:"Awareness", knows:"is living something happening now" },
-  { key:"problem", name:"Problem", band:"Awareness", knows:"feels the pain, no solution yet" },
-  { key:"solution", name:"Solution", band:"Consideration", knows:"compares options" },
-  { key:"product", name:"Product", band:"Decision", knows:"knows you, hasn't bought" },
-  { key:"most", name:"Most-Aware", band:"Decision", knows:"is ready, needs a reason" },
-  { key:"customer", name:"Customer", band:"Retention", knows:"already bought or joined" },
+  { key:"unaware", name:"Unaware", band:"Awareness", knows:"doesn't feel the problem", talks:"An everyday thing that teaches an uncommon lesson", q:"Are we reaching new people?", metric:"New viewers", support:"Reach, subscribers gained", paid:"Cost per new viewer" },
+  { key:"situation", name:"Situation", band:"Awareness", knows:"is living something happening now", talks:"News, season, trend, a worry of the moment", q:"Are we reaching new people?", metric:"New viewers", support:"Reach, subscribers gained", paid:"Cost per new viewer" },
+  { key:"problem", name:"Problem", band:"Awareness", knows:"feels the pain, no solution yet", talks:"The pain in plain words", q:"Do they stay and recognize themselves?", metric:"Retention, saves", support:"Comments, shares", paid:"Hook rate, cost per save" },
+  { key:"solution", name:"Solution", band:"Consideration", knows:"compares options", talks:"The category and why our mechanism wins", q:"Do they take the next step?", metric:"Clicks to the entry offer", support:"CTR, leads", paid:"Cost per click" },
+  { key:"product", name:"Product", band:"Decision", knows:"knows you, hasn't bought", talks:"Proof, testimonials, demos", q:"Do they trust us?", metric:"Conversion rate", support:"Cost per lead, CTR", paid:"Cost per lead" },
+  { key:"most", name:"Most-Aware", band:"Decision", knows:"is ready, needs a reason", talks:"Offer, bundle, deadline", q:"Do they buy?", metric:"ROAS, cost per purchase", support:"Revenue per piece", paid:"ROAS" },
+  { key:"customer", name:"Customer", band:"Retention", knows:"already bought or joined", talks:"Tutorials, resources, wins, the next step up", q:"Do they stay and move up?", metric:"Active members, upgrades", support:"Resource downloads, renewals", paid:"Cost per upgrade" },
 ];
 STEPS.forEach((s, i) => { s.n = i + 1; });
 const STEP = Object.fromEntries(STEPS.map((s) => [s.key, s]));
 const BANDS = ["Awareness", "Consideration", "Decision", "Retention"];
+const BAND_NOTE = { Awareness:"People who don't know you yet", Consideration:"Comparing ways to solve it", Decision:"Ready to choose you", Retention:"Already in: keep them, move them up" };
+const BAND_COLOR = { Awareness:2, Consideration:4, Decision:6, Retention:7 };
+// kinds of channel: the Journey's columns
+const FAM = { IG:"social", FB:"social", TT:"social", X:"social", LI:"social", YT:"video", YS:"video", SK:"community", NL:"email", EM:"email", PC:"podcast", WEB:"web", AD:"ads" };
+const FAM_ORDER = ["video", "social", "ads", "community", "email", "podcast", "web", "other"];
+const FAM_NAME = { video:"Video", social:"Social", ads:"Ads", community:"Community", email:"Email", podcast:"Podcast", web:"Web", other:"Other" };
+// what each lane runs (from Content - Awareness System); a lane not listed shows the kinds its notes have
+const LANE_FAMS = {
+  AI: { social:"Instagram, Facebook, TikTok", ads:"Meta Ads", community:"Skool", email:"Newsletter", podcast:"Podcast", web:"Web" },
+  PB: { video:"YouTube", social:"Instagram, Facebook, LinkedIn, X / Threads", podcast:"Podcast", web:"Web" },
+};
+const FAM_PLANNED = { AI:["email"], PB:["podcast"] };
+const HOOK_METRIC = { video:"Thumbnail CTR · still watching at 0:30", short:"3-second retention (Shorts: viewed vs swiped)", carousel:"Past the cover · saves", ad:"Hook rate · CTR" };
+// formats that fit each step (the funnel reference read the other way)
+const STEP_FMT = {
+  unaware:[["Long video","Story video"],["Short","Short"],["Video","TikTok"],["Reel","Reel"],["Episode","Podcast episode"]],
+  situation:[["Reel","News-hook Reel"],["Short","Short"],["Carousel","What it means for you"],["Post","Post"],["Email","Newsletter"]],
+  problem:[["Carousel","The pain, slide by slide"],["Reel","Reel"],["Thread","Thread"],["Post","Post"],["Ad","Cold ad"],["Email","Newsletter"]],
+  solution:[["Live workshop","Live workshop"],["Long video","Framework video"],["Carousel","Comparison carousel"],["Page","Landing page"],["Email","Newsletter"],["Ad","Cold ad"]],
+  product:[["Reel","Testimonial Reel"],["Carousel","Case-study carousel"],["Live workshop","Live Q&A"],["Ad","Retargeting ad"],["Page","Landing page"]],
+  most:[["Ad","Deadline ad"],["Email","Deadline email"],["Page","Sales page"],["Live workshop","Open Q&A before the close"]],
+  customer:[["Resource","Tutorial or resource"],["Post","Member win"],["Email","Onboarding email"],["Episode","Podcast episode"],["Live workshop","Members-only live"]],
+};
+const FMT_CH = { "Long video":"YouTube", Short:"YouTube Shorts", Video:"TikTok", Reel:"Instagram", Episode:"Podcast", Carousel:"Instagram", Email:"Newsletter", Thread:"X / Threads", Ad:"Meta Ads", "Live workshop":"Skool", Page:"Web", Resource:"Skool" };
+const LANE_SKIP = { AI:["Long video", "Short", "Thread"], PB:["Video", "Ad", "Live workshop", "Resource", "Email"] };
 const IDEA_ST = ["new", "refining", "approved", "icebox", "dead"];
 const DRAFT_ST = ["copy", "visual", "record", "edit", "review", "approved", "parked"]; // "approved" = Eduardo's go to post: the daily content task picks it up
 const ST_NAME = { new:"New", refining:"Refining", approved:"Approved", icebox:"Icebox", dead:"Dead", copy:"Copy", visual:"Visual", record:"Record", edit:"Edit", review:"Review", parked:"Parked", ready:"Ready to post", posted:"Posted", other:"Other" };
@@ -315,7 +390,7 @@ const S = {
   auth: "out", expired: false, authMsg: "", email: ls.get("whs.email") || "",
   lanes: [], noLaneId: null, notes: [], loadedAt: null, fromCache: false, loading: false, progress: "",
   lane: ls.get("whs.lane") || "all", view: "today", open: null, busy: false, undo: null,
-  f: { it: "open", who: "", q: "", ch: "" }, month: isoToday().slice(0, 7), jcell: null, sort: { key: "postedAt", dir: -1 },
+  f: { it: "open", who: "", q: "", ch: "", step: "" }, brief: { step: "", fam: "", text: "" }, month: isoToday().slice(0, 7), jcell: null, sort: { key: "postedAt", dir: -1 },
 };
 
 /* ================= small helpers ================= */
@@ -661,7 +736,13 @@ const idChip = (n) => n.id ? `<span class="chip code">${esc(n.id)}</span>` : "";
 const laneChip = (n) => `<span class="chip">${esc(laneName(n.lane))}</span>`;
 const chChip = (n) => n.ch ? `<span class="chip" title="${esc(n.channel)}">${esc(CH[n.ch] || n.ch)}</span>` : "";
 const stChip = (n) => `<span class="st g-${ST_GROUP[n.status]}" title="${esc(n.statusRaw)}">${esc(n.status === "other" ? (n.statusRaw || "No status").slice(0, 28) : ST_NAME[n.status])}</span>`;
-const stepChip = (n) => n.awareness ? `<span class="step s${STEP[n.awareness].n}" title="${n.awStatus === "proposed" ? "Proposed by an agent" : "Awareness step"}">${esc(STEP[n.awareness].name)}${n.awStatus === "proposed" ? "?" : ""}</span>` : "";
+const stepChip = (n) => n.awareness ? `<span class="step s${STEP[n.awareness].n}${n.awStatus === "proposed" ? " prop" : ""}" title="${n.awStatus === "proposed" ? "Proposed by an agent, not confirmed yet" : "Awareness step"}">${esc(STEP[n.awareness].name)}${n.awStatus === "proposed" ? " ?" : ""}</span>` : "";
+const stepTag = (key) => `<span class="step s${STEP[key].n}">${esc(STEP[key].name)}</span>`;
+const famOf = (n) => FAM[n.ch] || "other";
+const laneCode = () => S.lane === "all" ? "" : (laneOf(S.lane)?.code || "");
+const proposed = (N) => N.filter((n) => n.awareness && n.awStatus === "proposed");
+const pctS = (v) => `${Math.round(v * 100)}%`;
+const reach = (n) => { const l = n.perf?.latest; return l ? (l.views ?? l.impressions ?? l.reach ?? null) : null; };
 const empty = (t) => `<div class="empty">${t}</div>`;
 const more = (count, view) => `<button class="more" data-act="view" data-k="${view}">+ ${count} more</button>`;
 function row(n, actions = "") {
@@ -685,7 +766,7 @@ function metricMini(n) {
   if (n.url) bits.push(`<a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">live</a>`);
   return bits.length ? `<span class="who">${bits.join(" · ")}</span>` : "";
 }
-const head = (title, sub, extra = "") => `<div class="mhead"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ""}</div><div class="row">${extra}<span class="persp">${esc(S.lane === "all" ? "All lanes" : laneName(S.lane))}</span></div></div>`;
+const head = (title, sub, extra = "") => `<div class="mhead"><div><span class="persp">${esc(S.lane === "all" ? "All lanes" : `${laneName(S.lane)}${laneOf(S.lane)?.lang ? ` · ${laneOf(S.lane).lang}` : ""}`)}</span><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ""}</div><div class="row">${extra}</div></div>`;
 
 /* ================= md (safe: everything is escaped first) ================= */
 function inline(s) {
@@ -750,21 +831,28 @@ function vToday() {
     ...ready.filter((n) => !n.scheduledAt).map((n) => row(n, `<span class="who">Ready to post</span>`)),
     ...due.map((n) => row(n, `<span class="who">${esc(n.checkpoints.find((c) => c.date === t).label)} reading today</span>`)),
   ];
-  return head("Today", "What needs you, read live from your notes in Drive.") + `
+  const prop = proposed(N), J = journey(), gaps = J.rows.filter((r) => r.flag);
+  const changed = [...N].filter((n) => n.file?.modifiedTime).sort((a, b) => b.file.modifiedTime.localeCompare(a.file.modifiedTime)).slice(0, 8);
+  return head("Today", "Only what needs you, read live from your notes in Drive. Everything else the agents are doing.", `<button class="btn primary" data-act="view" data-k="studio">New idea</button>`) + `
   <div class="grid4">
-    ${kpi(rec.length + rev.length, "Needs you", `${rec.length} to record · ${rev.length} to review`, "pipeline")}
+    ${kpi(rec.length + rev.length + prop.length, "Needs you", `${rec.length} to record · ${rev.length} to review · ${prop.length} steps to confirm`, "today")}
     ${kpi(ideas.length, "Ideas to decide", `${appr.length} approved, waiting for a draft`, "ideas")}
     ${kpi(prod.length, "In production", "Claude is writing, designing or editing", "pipeline")}
     ${kpi(posted.filter((n) => daysAgo(n.postedAt) <= 30).length, "Posted, 30 days", `${ready.length} ready to post`, "measure")}
   </div>
   <div class="grid2">
-    <section class="card"><h3>Needs you</h3><div class="list">${[...rev, ...rec].map((n) => row(n, actionsFor(n))).join("") || empty("Nothing is waiting on you.")}</div></section>
+    <section class="card"><div class="spread"><h3>Approve and record</h3><span class="mono small muted">${rev.length + rec.length}</span></div><div class="list">${[...rev, ...rec].map((n) => row(n, actionsFor(n))).join("") || empty("Nothing is waiting on you.")}</div></section>
+    <section class="card"><div class="spread"><h3>Confirm the step</h3><span class="mono small muted">${prop.length}</span></div><p class="small muted">An agent proposed the awareness step (the chip with a "?"). One click confirms it in the note; open the piece to pick another step.</p><div class="list">${prop.slice(0, 12).map((n) => row(n, `<button class="btn xs primary" data-act="confirmstep" data-id="${esc(n.fileId)}">Confirm ${esc(STEP[n.awareness].name)}</button>`)).join("") || empty("No proposed steps waiting.")}${prop.length > 12 ? more(prop.length - 12, "journey") : ""}</div></section>
+  </div>
+  <div class="grid2">
     <section class="card"><h3>Coming up</h3><div class="list">${coming.join("") || empty("Nothing scheduled or ready.")}</div></section>
+    <section class="card"><h3>Gaps in the journey</h3><div class="list">${!J.flagsOn ? empty(`Gaps show once at least half the pieces have a step: ${J.T.length} of ${J.N.length} so far.`) : gaps.map((r) => `<div class="li"><div class="lt"><span class="t" style="cursor:default">${esc(r.s.name)}</span><div class="m">${stepTag(r.s.key)}<span class="flag sm ${r.flag}">${FLAG_TXT[r.flag]}</span><span class="who">${esc(r.s.talks)}</span></div></div>${r.flag !== "over" ? `<div class="row acts"><button class="btn xs primary" data-act="jcreate" data-k="${r.s.key}|">Create for this gap</button></div>` : ""}</div>`).join("") || empty("No gaps: every step has between 5 % and 50 % of the pieces.")}</div></section>
   </div>
   <div class="grid2">
     <section class="card"><h3>In production</h3><div class="list">${prod.slice(0, 10).map((n) => row(n)).join("") || empty("Nothing in production.")}${prod.length > 10 ? more(prod.length - 10, "pipeline") : ""}</div></section>
     <section class="card"><h3>Recently posted</h3><div class="list">${posted.slice(0, 8).map((n) => row(n, metricMini(n))).join("") || empty("Nothing posted yet.")}</div></section>
-  </div>`;
+  </div>
+  <section class="card"><div class="spread"><h3>Latest changes in your notes</h3><button class="btn xs" data-act="view" data-k="agents">Agents</button></div>${changeLog(changed)}</section>`;
 }
 
 const IDEA_TABS = [["open", "To decide", (n) => n.status === "new" || n.status === "refining"], ["approved", "Approved", (n) => n.status === "approved"], ["shelf", "Icebox & dead", (n) => n.status === "icebox" || n.status === "dead"], ["all", "All", () => true]];
@@ -799,9 +887,10 @@ const COLS = [
 const card = (n) => `<button class="pc" data-act="open" data-id="${esc(n.fileId)}"><span class="pt">${esc(n.title)}</span><span class="pm">${idChip(n)}${S.lane === "all" ? laneChip(n) : ""}${chChip(n)}${stChip(n)}${stepChip(n)}</span>${(n.postedAt || n.scheduledAt || n.date) ? `<span class="from">${fmtDate(n.postedAt || n.scheduledAt || n.date)}</span>` : ""}</button>`;
 function vPipeline() {
   const N = scope(); const chs = [...new Set(N.filter((n) => n.stage !== "ideas").map((n) => n.ch).filter(Boolean))].sort();
-  const fl = (n) => !S.f.ch || n.ch === S.f.ch;
+  const fl = (n) => (!S.f.ch || n.ch === S.f.ch) && (!S.f.step || (S.f.step === "none" ? !n.awareness : n.awareness === S.f.step));
   return head("Pipeline", "Every piece by stage. Folders and <span class=\"mono\">status:</span> lines from your notes; Claude moves notes between folders.") + `
-  <div class="toolbar"><select data-in="ch" aria-label="Channel"><option value="">All channels</option>${chs.map((c) => `<option value="${c}" ${S.f.ch === c ? "selected" : ""}>${esc(CH[c] || c)}</option>`).join("")}</select></div>
+  <div class="toolbar"><select data-in="ch" aria-label="Channel"><option value="">All channels</option>${chs.map((c) => `<option value="${c}" ${S.f.ch === c ? "selected" : ""}>${esc(CH[c] || c)}</option>`).join("")}</select>
+    <select data-in="step" aria-label="Awareness step"><option value="">All steps</option>${STEPS.map((s) => `<option value="${s.key}" ${S.f.step === s.key ? "selected" : ""}>${s.n}. ${s.name}</option>`).join("")}<option value="none" ${S.f.step === "none" ? "selected" : ""}>No step yet</option></select></div>
   <div class="board">${COLS.map(([label, sub, fn]) => {
     const L = N.filter(fn).filter(fl).sort((a, b) => (b.postedAt || b.date || "").localeCompare(a.postedAt || a.date || ""));
     return `<div class="col"><h3>${label}<span class="n">${L.length}</span></h3><div class="sub">${sub}</div>${L.slice(0, 60).map(card).join("")}${L.length > 60 ? `<div class="who">+ ${L.length - 60} more</div>` : ""}</div>`;
@@ -823,25 +912,49 @@ function vCalendar() {
   <p class="small muted" style="margin-top:12px">${readings} performance readings (D1 to D90) fall in this month.</p></section>`;
 }
 
+const FLAG_TXT = { gap:"No pieces", under:"Under 5 %", over:"Over 50 %" };
+function journey() {
+  const N = scope().filter((n) => n.stage !== "ideas"), T = N.filter((n) => n.awareness);
+  const flagsOn = T.length >= 10 && T.length >= N.length / 2;
+  const rows = STEPS.map((s) => {
+    const list = T.filter((n) => n.awareness === s.key), share = T.length ? list.length / T.length : 0;
+    return { s, list, share, flag: !flagsOn ? "" : !list.length ? "gap" : share < .05 ? "under" : share > .5 ? "over" : "" };
+  });
+  const bands = BANDS.map((b) => { const rs = rows.filter((r) => r.s.band === b), count = rs.reduce((a, r) => a + r.list.length, 0);
+    return { name: b, rows: rs, count, share: T.length ? count / T.length : 0, flags: rs.filter((r) => r.flag).length }; });
+  const present = new Set(N.map(famOf)), base = LANE_FAMS[laneCode()] || {};
+  return { N, T, rows, bands, flagsOn, fams: FAM_ORDER.filter((f) => base[f] || present.has(f)) };
+}
+function changeLog(L) {
+  return `<div class="log" style="margin-top:8px">${L.map((n) => `<div><span class="mono small muted">${esc(ago(n.file.modifiedTime))}</span><span><button data-act="open" data-id="${esc(n.fileId)}">${esc(n.id || n.title)}</button>${n.id ? ` · ${esc(n.title)}` : ""} <span class="who">${esc(ST_NAME[n.status] || n.status)}${S.lane === "all" ? ` · ${esc(laneName(n.lane))}` : ""}</span></span></div>`).join("") || empty("Nothing yet.")}</div>
+  <p class="small muted" style="margin-top:8px">The notes that changed last in Drive, whoever changed them: you, an agent's routine or this page.</p>`;
+}
 function vJourney() {
-  const N = scope().filter((n) => n.stage !== "ideas");
-  const chs = [...new Set(N.map((n) => n.ch).filter(Boolean))].sort();
-  const tagged = N.filter((n) => n.awareness).length;
-  const cnt = (step, ch) => N.filter((n) => (step ? n.awareness === step : !n.awareness) && (!ch || n.ch === ch)).length;
-  const cell = (step, ch) => { const c = cnt(step, ch), k = `${step || "none"}|${ch}`; return `<td><button class="cell ${c ? "" : "zero"}" data-act="jcell" data-k="${k}" aria-pressed="${S.jcell === k}"><b>${c}</b></button></td>`; };
-  const stepRow = (s) => { const total = cnt(s.key, ""); return `<tr><th class="rowhead" scope="row"><span class="step s${s.n}">${s.n}. ${s.name}</span></th>${chs.map((c) => cell(s.key, c)).join("")}${cell(s.key, "")}<td><div class="bar" title="${tagged ? Math.round(total / tagged * 100) : 0}% of tagged pieces"><i style="width:${tagged ? Math.round(total / tagged * 100) : 0}%"></i></div></td></tr>`; };
+  const J = journey(), fams = J.fams, code = laneCode(), base = LANE_FAMS[code] || {}, planned = FAM_PLANNED[code] || [];
+  const widths = [100, 80, 62, 46];
+  const funnel = `<section class="card"><div class="spread" style="margin-bottom:10px"><h3>The funnel at a glance</h3><span class="small muted">${J.T.length} of ${J.N.length} pieces have a step, grouped into the four stages of the funnel</span></div>
+    <div class="funnelv">${J.bands.map((b, i) => `<div class="fband" style="width:${widths[i]}%;background:var(--s${BAND_COLOR[b.name]});color:var(--on-s${BAND_COLOR[b.name]})">
+      <div><b>${b.name}</b> <span class="fs">${b.rows.map((r) => esc(r.s.name)).join(" · ")}</span><div class="fs">${esc(BAND_NOTE[b.name])}${b.flags ? ` · ${b.flags} step${b.flags > 1 ? "s" : ""} flagged` : ""}</div></div>
+      <div class="fn">${b.count}<div class="fs">${pctS(b.share)}</div></div></div>`).join("")}</div>
+    ${J.T.length < J.N.length ? `<p class="small muted" style="margin-top:10px">${J.N.length - J.T.length} pieces have no step yet (last row of the table). ${proposed(J.N).length ? `${proposed(J.N).length} steps are proposed and wait for your confirmation in <a href="#today" data-act="view" data-k="today">Today</a>.` : ""}</p>` : ""}</section>`;
+  const famHead = (f) => `<th><div class="fh"><span>${FAM_NAME[f]}${f === "ads" ? ' <span class="chip paid">paid</span>' : ""}${planned.includes(f) ? ' <span class="chip">planned</span>' : ""}</span><small>${esc(base[f] || [...new Set(J.N.filter((n) => famOf(n) === f).map((n) => CH[n.ch] || n.ch || "No channel"))].join(", "))}</small></div></th>`;
+  const cell = (key, list, f) => { const v = list.filter((n) => famOf(n) === f), k = `${key}|${f}`;
+    return `<td><button class="cell ${v.length ? "" : "zero"} ${f === "ads" ? "paid" : ""}" data-act="${v.length || key === "none" ? "jcell" : "jcreate"}" data-k="${k}" aria-pressed="${S.jcell === k}" aria-label="${key === "none" ? "No step yet" : STEP[key].name} in ${FAM_NAME[f]}: ${v.length} pieces"><b>${v.length}</b><span>${v.length ? `${v.filter((n) => n.stage === "posted").length} posted` : key === "none" ? "" : "+ create"}</span></button></td>`; };
+  const shareCell = (r) => `<td><div class="share"><div class="bar"><i style="width:${Math.round(r.share * 100)}%;background:var(--s${r.s.n})"></i></div><span class="mono small">${r.list.length} · ${pctS(r.share)}${r.flag ? ` <span class="flag sm ${r.flag}">${FLAG_TXT[r.flag]}</span>` : ""}</span></div></td>`;
+  const none = J.N.filter((n) => !n.awareness);
   let picked = "";
   if (S.jcell) {
-    const [step, ch] = S.jcell.split("|");
-    const L = N.filter((n) => (step === "none" ? !n.awareness : n.awareness === step) && (!ch || n.ch === ch));
-    picked = `<section class="card"><h3>${step === "none" ? "No step yet" : esc(STEP[step].name)}${ch ? ` · ${esc(CH[ch] || ch)}` : ""}: ${L.length}</h3><div class="list">${L.slice(0, 80).map((n) => row(n)).join("") || empty("None.")}</div></section>`;
+    const [step, f] = S.jcell.split("|");
+    const L = J.N.filter((n) => (step === "none" ? !n.awareness : n.awareness === step) && (!f || famOf(n) === f));
+    picked = `<section class="card"><h3>${step === "none" ? "No step yet" : esc(STEP[step].name)}${f ? ` · ${FAM_NAME[f]}` : ""}: ${L.length}</h3><div class="list">${L.slice(0, 80).map((n) => row(n, n.awStatus === "proposed" ? `<button class="btn xs primary" data-act="confirmstep" data-id="${esc(n.fileId)}">Confirm ${esc(STEP[n.awareness].name)}</button>` : "")).join("") || empty("None.")}</div></section>`;
   }
-  return head("Journey", `Pieces by awareness step and channel. <b>${tagged} of ${N.length}</b> pieces have a step; set one in a piece's panel (it adds <span class="mono">awareness:</span> to the note).`) + `
-  <section class="card"><div class="tablewrap"><table class="jt"><thead><tr><th>Step</th>${chs.map((c) => `<th>${esc(CH[c] || c)}</th>`).join("")}<th>Total</th><th>Share</th></tr></thead><tbody>
-    ${BANDS.map((b) => `<tr class="bandrow"><td colspan="${chs.length + 3}"><span>${b}</span></td></tr>${STEPS.filter((s) => s.band === b).map(stepRow).join("")}`).join("")}
-    <tr class="bandrow"><td colspan="${chs.length + 3}"><span>Not tagged</span></td></tr>
-    <tr><th class="rowhead" scope="row"><span class="st">No step yet</span></th>${chs.map((c) => cell("", c)).join("")}${cell("", "")}<td></td></tr>
-  </tbody></table></div></section>${picked}`;
+  return head("Journey", "Which step of the customer's journey is missing content, in every kind of channel you run. Click a number to see the pieces; click an empty cell to start an idea for it.") + funnel + `
+  <section class="card"><div class="tablewrap"><table class="jt"><thead><tr><th>Step</th>${fams.map(famHead).join("")}<th>Share of tagged</th></tr></thead><tbody>
+    ${J.bands.map((b) => `<tr class="bandrow"><td colspan="${fams.length + 2}"><span>${b.name}</span></td></tr>${b.rows.map((r) => `<tr><th class="rowhead" scope="row"><span class="step s${r.s.n}">${r.s.n}. ${r.s.name}</span><div class="small muted" style="font-weight:400;text-transform:none;letter-spacing:0;margin-top:4px;font-family:var(--f-body)">${esc(r.s.talks)}</div></th>${fams.map((f) => cell(r.s.key, r.list, f)).join("")}${shareCell(r)}</tr>`).join("")}`).join("")}
+    <tr class="bandrow"><td colspan="${fams.length + 2}"><span>Not tagged</span></td></tr>
+    <tr><th class="rowhead" scope="row"><span class="st">No step yet</span></th>${fams.map((f) => cell("none", none, f)).join("")}<td><div class="share"><span class="mono small">${none.length}</span></div></td></tr>
+  </tbody></table></div>
+  <p class="small muted" style="margin-top:8px">Ideas are left out. ${J.flagsOn ? "Flags: no pieces in a step, under 5 % of the tagged pieces, or over 50 %." : `Gap flags turn on once at least half the pieces have a step (${J.T.length} of ${J.N.length} so far).`} Organic opens the funnel, paid closes it; a gap is filled with organic first${code === "AI" ? "" : code === "PB" ? ". This lane has no paid ads" : ""}. Ad spend isn't shown: no ads data is connected yet.</p></section>${picked}`;
 }
 
 const MCOLS = [["title", "Piece"], ["ch", "Channel"], ["postedAt", "Posted"], ["reading", "Reading"], ["views", "Views"], ["reach", "Reach"], ["likes", "Likes"], ["comments", "Comments"], ["saves", "Saves"], ["shares", "Shares"], ["follows", "Follows"]];
@@ -856,20 +969,33 @@ function vMeasure() {
   <div class="grid4">${Object.entries(by).sort((a, b) => b[1].n - a[1].n).slice(0, 8).map(([c, v]) => `<div class="card kpi" style="cursor:default"><span class="eyebrow">${esc(CH[c] || c)}</span><span class="big">${fmtNum(v.views)}</span><span class="sub">views across ${v.read} of ${v.n} posts with a reading</span></div>`).join("") || `<div class="card">${empty("Nothing posted yet.")}</div>`}</div>
   <section class="card"><div class="tablewrap"><table class="t"><thead><tr>${MCOLS.map(([k, l]) => `<th class="${isNum(k) ? "num" : ""}"><button data-act="sort" data-k="${k}">${l}${key === k ? (dir > 0 ? " ↑" : " ↓") : ""}</button></th>`).join("")}</tr></thead><tbody>
   ${L.map((n) => `<tr class="click" data-act="open" data-id="${esc(n.fileId)}">${MCOLS.map(([k]) => { const v = mval(n, k); return `<td class="${isNum(k) ? "num" : ""}">${k === "title" ? `${n.id ? `<span class="who">${esc(n.id)}</span><br>` : ""}${esc(v)}` : k === "postedAt" ? fmtDate(v) : isNum(k) ? fmtNum(v) : esc(v || "—")}</td>`; }).join("")}</tr>`).join("")}
-  </tbody></table></div></section>`;
+  </tbody></table></div></section>
+  <h3 style="margin-top:6px">By awareness step</h3>
+  <div class="grid3">${STEPS.map((s) => ({ s, l: N.filter((n) => n.awareness === s.key) })).filter((b) => b.l.length).map((b) => `<section class="card"><div class="row">${stepTag(b.s.key)}<span class="who">${esc(b.s.q)}</span></div><div class="eyebrow" style="margin-top:8px">Judged by: ${esc(b.s.metric)}</div>
+    <div class="list">${b.l.sort((x, y) => (reach(y) ?? -1) - (reach(x) ?? -1)).slice(0, 8).map((n) => row(n, metricMini(n))).join("")}</div></section>`).join("") || `<section class="card">${empty("No posted piece has an awareness step yet.")}</section>`}</div>
+  <p class="small muted">Each step is judged by its own metric (see Playbook). The notes hold views, reach, likes, comments, saves and shares today; new viewers, retention and clicks arrive when the data sources are decided.</p>`;
 }
 
+function fitHtml(step, laneKey) {
+  if (!STEP[step]) return "";
+  const code = laneOf(laneKey)?.code || "";
+  const L = (STEP_FMT[step] || []).filter(([f]) => !(LANE_SKIP[code] || []).includes(f)).map(([f, label]) => ({ f, label, ch: f === "Post" ? (code === "PB" ? "LinkedIn" : step === "customer" ? "Skool" : "Instagram") : FMT_CH[f] }));
+  return `<div class="spread"><b class="small">Formats that fit ${esc(STEP[step].name)}</b><span class="small muted">Pick one and channel and format follow</span></div>
+    <div class="sugg" style="margin-top:6px">${L.map((x) => `<button type="button" data-act="usefmt" data-ch="${esc(x.ch)}" data-f="${esc(x.f)}">${esc(x.label)} · ${esc(x.ch)}</button>`).join("") || '<span class="small muted">No format for this step in this lane.</span>'}</div>
+    <p class="small muted" style="margin-top:6px">${esc(STEP[step].name)}: ${esc(STEP[step].talks.toLowerCase())}. Judged by ${esc(STEP[step].metric.toLowerCase())}.</p>`;
+}
 function vStudio() {
-  const def = S.lane !== "all" ? S.lane : (S.lanes[0]?.key || "none");
+  const def = S.lane !== "all" ? S.lane : (S.lanes[0]?.key || "none"), br = S.brief;
   const formats = ["Reel", "Carousel", "Post", "Text post + quote card", "Long video", "Short", "Thread", "Live workshop", "Email", "Podcast episode"];
-  return head("New idea", `Write it the way you'd say it. It's saved in your own words as an idea note in the lane's <span class="mono">01 IDEAS/${esc(CONFIG.ownerIdeas)}</span> folder. Once it's approved, Claude's daily content task turns it into a draft.`) + `
+  return head("Studio", `Start a piece from a step, a gap or a thought. Write it the way you'd say it. It's saved in your own words as an idea note in the lane's <span class="mono">01 IDEAS/${esc(CONFIG.ownerIdeas)}</span> folder. Once it's approved, Claude's daily content task turns it into a draft.`) + `
   <form class="card form" id="studio-form" autocomplete="off">
     <div class="grid2">
       <div class="field"><label for="f-lane">Lane</label><select id="f-lane" name="lane">${S.lanes.map((l) => `<option value="${esc(l.key)}" ${l.key === def ? "selected" : ""}>${esc(l.name)}${l.lang ? ` (${esc(l.lang)})` : ""}</option>`).join("")}<option value="none" ${def === "none" ? "selected" : ""}>No lane yet</option></select></div>
-      <div class="field"><label for="f-step">Awareness step (optional)</label><select id="f-step" name="step"><option value="">Not sure yet</option>${STEPS.map((s) => `<option value="${s.key}">${s.n}. ${s.name}: ${s.knows}</option>`).join("")}</select></div>
+      <div class="field"><label for="f-step">Awareness step (optional)</label><select id="f-step" name="step"><option value="">Not sure yet</option>${STEPS.map((s) => `<option value="${s.key}" ${br.step === s.key ? "selected" : ""}>${s.n}. ${s.name}: ${s.knows}</option>`).join("")}</select></div>
     </div>
+    <div id="fit">${fitHtml(br.step, def)}</div>
     <div class="field"><label for="f-title">Working title</label><input id="f-title" name="title" type="text" required maxlength="120" placeholder="The one-line version"></div>
-    <div class="field"><label for="f-text">The idea</label><textarea id="f-text" name="text" rows="7" placeholder="What happened, what people should get from it, a phrase you'd say…"></textarea></div>
+    <div class="field"><label for="f-text">The idea</label><textarea id="f-text" name="text" rows="7" placeholder="What happened, what people should get from it, a phrase you'd say…">${esc(br.text)}</textarea></div>
     <div class="grid3">
       <div class="field"><label for="f-ch">Channel (optional)</label><input id="f-ch" name="channel" type="text" list="dl-ch" placeholder="Instagram, YouTube…"></div>
       <div class="field"><label for="f-format">Format (optional)</label><input id="f-format" name="format" type="text" list="dl-format" placeholder="Reel, carousel, long video…"></div>
@@ -880,7 +1006,98 @@ function vStudio() {
     <label class="check"><input type="checkbox" name="approve"> Approve it now (it goes straight to Claude's next draft run)</label>
     <div class="row"><button class="btn primary" type="submit">Save to my OS</button><span class="small muted">Creates one new note. Nothing else changes.</span></div>
   </form>
+  <section class="card"><h3>Packages, derivatives and ads</h3><p class="small">The prototype's package generator (titles, thumbnail text, hooks, the first 30 seconds), the derivatives per piece and the ad pack need Claude to write them, and this page runs without Claude. They aren't built yet: the plan is that an agent writes them into the piece's note and this screen shows them for you to pick and approve.</p></section>
   <section class="card"><h3>What happens next</h3><ol class="steps"><li>The note appears in Obsidian and in Drive within a minute or so.</li><li>Approved ideas show in Pipeline under "Approved ideas".</li><li>Claude's daily content task (06:52) writes the draft: hook, copy, caption, visual brief.</li><li>You record (video) and approve to post from Today; Claude moves it to Ready.</li></ol></section>`;
+}
+
+function vOverview() {
+  const mods = [["journey","Journey","which step is missing content"],["ideas","Ideas","the bank, by lane"],["studio","Studio","start a piece from a gap"],["pipeline","Pipeline","every piece, every status"],["calendar","Calendar","what went out when"],["measure","Measure","readings, by step"]];
+  const N = scope();
+  return head("How it all fits", "One system: you decide, the Studio is the screen, agents do the work, the OS keeps the record.") + `
+  <div class="map">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <section class="layer you"><div class="eyebrow">You · a few minutes a day</div><h3>Decide and record</h3>
+        <div class="chips"><span class="pill">Pick the gap to fill</span><span class="pill">Approve ideas</span><span class="pill">Confirm each piece's step</span><span class="pill">Record</span><span class="pill">Approve to post</span><span class="pill">Publish</span></div></section>
+      <div class="arrowdown">▼ every decision is a click in the Studio ▲ the Studio brings you only what needs you (Today)</div>
+      <section class="layer ui"><div class="eyebrow">Wide Hook Studio · the interface</div><h3 style="color:var(--on-board)">The weekly loop, per lane</h3>
+        <div class="loop">${mods.map(([k, n, d], i) => `<button type="button" class="mod" data-act="view" data-k="${k}"><b>${n}</b><span>${d}</span></button>${i < mods.length - 1 ? '<span class="arr">→</span>' : '<span class="arr">↺</span>'}`).join("")}</div>
+        <p class="small" style="color:var(--on-board-2)">Beside the loop: <b style="color:var(--on-board)">Hooks</b> (every opening line, with its numbers) and <b style="color:var(--on-board)">Playbook</b> (rules per step and format). The lane switch on the left changes every screen to that lane.</p></section>
+      <div class="arrowdown">▼ your clicks change one property line in a note ▲ the Studio reads the notes straight from Drive (no sync)</div>
+      <section class="layer agents"><div class="eyebrow">Agents · do the work</div><h3>Jorge and the routines</h3>
+        <div class="tablewrap"><table class="t"><thead><tr><th>Who</th><th>When</th><th>What</th></tr></thead><tbody>
+          <tr><td>Jorge · Radar IA Diario</td><td class="mono">06:37</td><td>The day's AI news and cultural hooks, the raw material for ideas</td></tr>
+          <tr><td>Jorge · Daily content</td><td class="mono">06:52</td><td>Drafts the day's piece per lane; turns your approved ideas into drafts; runs the publish checklist on what you approved to post</td></tr>
+          <tr><td>Jorge · Post performance check</td><td class="mono">07:47</td><td>Reads every post at D1, D3, D7, D30, D90 into the note's Performance table</td></tr>
+          <tr><td>Jorge · Awareness steps</td><td class="mono">in batches</td><td>Proposes each piece's step and 5 Cs as properties; you confirm in Today</td></tr>
+          <tr><td>Jorge · Gap review <span class="chip">planned</span></td><td class="mono">Mon</td><td>The week's 1-2 gaps per lane in your BOD (phase 3 of the plan)</td></tr>
+          <tr><td>Ads agent <span class="chip">to hire</span></td><td class="mono">—</td><td>AI Business only: ad packs and Meta ads, once Meta is connected</td></tr>
+        </tbody></table></div></section>
+      <div class="arrowdown">▼ every piece is written to its note ▲ the Studio reads the notes</div>
+      <section class="layer os"><div class="eyebrow">00_EduOS · the source of truth</div><h3>One note per piece, in each lane</h3>
+        <div class="chips"><span class="pill mono">01 IDEAS</span><span class="pill mono">02 DRAFTS</span><span class="pill mono">03 READY TO POST</span><span class="pill mono">04 POSTED</span><span class="pill">Performance table in each posted note</span><span class="pill">Lane guides · Voice</span></div>
+        <p class="small muted">${N.length} notes in ${S.lane === "all" ? `${S.lanes.length} lanes` : "this lane"} right now. Open any piece and its Properties panel shows exactly what its note holds.</p></section>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <section class="layer data"><div class="eyebrow">Numbers in · decided later</div><h3>Data sources → Measure</h3>
+        <div class="chips"><span class="pill">vidIQ · YouTube (limited)</span><span class="pill">Meta Business Suite · IG/FB organic</span><span class="pill">Adspirer · Meta Ads (AI Business)</span><span class="pill">CSV exports</span><span class="pill">TikTok (AI Business)</span></div></section>
+      <section class="card"><h3>Where the old dashboard went</h3>
+        <div class="tablewrap"><table class="t"><tbody>
+          <tr><td>Awareness map</td><td>→ <a href="#journey" data-act="view" data-k="journey">Journey</a></td></tr>
+          <tr><td>Hook vault</td><td>→ <a href="#hooks" data-act="view" data-k="hooks">Hooks</a>, every format</td></tr>
+          <tr><td>5 % / 50 % alerts</td><td>→ Journey flags</td></tr>
+          <tr><td>5-stage ladder</td><td>→ 7 steps in 4 funnel stages (adds Situation and Customer)</td></tr>
+          <tr><td>Spend by stage</td><td>→ Measure, when ads data is connected</td></tr>
+        </tbody></table></div></section>
+      <section class="card"><h3>A week</h3>
+        <div class="list">${[["Mon","Look at the Journey: pick the gap"],["Mon","Studio: start the idea for that gap"],["Daily","Today: approve the day's piece, confirm steps"],["Wed","Record what's waiting in Record"],["Thu","Review and approve to post"],["Fri","Measure: what moved, by step"]].map(([d, t]) => `<div class="li"><div class="lt"><span class="t" style="cursor:default">${esc(t)}</span><div class="m"><span class="who">${d}</span></div></div></div>`).join("")}</div></section>
+    </div>
+  </div>`;
+}
+function vHooks() {
+  const N = scope().filter((n) => n.stage !== "ideas" && n.hook);
+  const avg = {}; for (const n of scope().filter((x) => x.stage === "posted")) { const v = reach(n); if (v == null) continue; (avg[n.ch] ||= { s: 0, c: 0 }); avg[n.ch].s += v; avg[n.ch].c++; }
+  const L = N.map((n) => { const v = reach(n), a = avg[n.ch]; return { n, v, sc: v != null && a && a.c >= 3 && a.s > 0 ? v / (a.s / a.c) : null }; })
+    .sort((x, y) => (y.sc ?? -1) - (x.sc ?? -1) || (y.v ?? -1) - (x.v ?? -1));
+  return head("Hooks", "Every opening line in your pieces (the <span class=\"mono\">hook:</span> property), with the numbers of the piece it opened. Reuse a winner in the Studio.") + `
+  <section class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Hook</th><th>Channel · format</th><th>Step</th><th>Status</th><th class="num">Views</th><th class="num">vs channel average</th><th></th></tr></thead><tbody>
+  ${L.map(({ n, v, sc }) => `<tr><td style="max-width:380px"><b>${esc(stripMd(n.hook))}</b><div class="who"><button class="more" style="padding:0" data-act="open" data-id="${esc(n.fileId)}">${esc(n.id || "open")}</button> · ${esc(n.title)}</div></td><td>${chChip(n)}<div class="who" style="margin-top:4px">${esc(n.format.slice(0, 48))}</div></td><td>${stepChip(n) || '<span class="who">—</span>'}</td><td>${stChip(n)}${n.postedAt ? `<div class="who" style="margin-top:4px">${fmtDate(n.postedAt)}</div>` : ""}</td>
+    <td class="num">${fmtNum(v)}</td><td class="num ${sc == null ? "" : sc >= 1.2 ? "good" : sc < .8 ? "badv" : ""}">${sc == null ? "—" : `${sc >= 1 ? "+" : ""}${Math.round((sc - 1) * 100)}%`}</td><td><button class="btn xs" data-act="reuse" data-id="${esc(n.fileId)}">Reuse</button></td></tr>`).join("") || `<tr><td colspan="7">${empty("No piece here has a hook: property yet.")}</td></tr>`}
+  </tbody></table></div><p class="small muted" style="margin-top:8px">${N.length} pieces with a hook. Views is the latest reading in the note (views, or impressions or reach where the platform gives no views). The average is of your own posted pieces in the same channel, shown when at least 3 have a reading. Hook-specific numbers (3-second retention, thumbnail CTR, past the cover) aren't in the notes yet.</p></section>`;
+}
+function vPlaybook() {
+  return head("Playbook", "The rules every piece follows, per step and per format.") + `
+  <section class="card"><div class="tablewrap"><table class="t"><thead><tr><th>Step</th><th>What the piece talks about</th><th>The question it answers</th><th>Judged by (organic)</th><th>Judged by (paid)</th></tr></thead><tbody>
+  ${STEPS.map((s) => `<tr><td>${stepTag(s.key)}</td><td>${esc(s.talks)}</td><td>${esc(s.q)}</td><td>${esc(s.metric)}<div class="who">${esc(s.support)}</div></td><td>${esc(s.paid)}</td></tr>`).join("")}</tbody></table></div></section>
+  <section class="card"><h3>Formats and their natural zone</h3><div class="tablewrap"><table class="t"><thead><tr><th>Format</th><th>Main zone</th><th>Sometimes</th><th>Hook yardstick</th><th>Lanes</th></tr></thead><tbody>
+    <tr><td>Long video (YouTube)</td><td>Unaware, Situation</td><td>Problem</td><td>${HOOK_METRIC.video}</td><td>Personal Brand</td></tr>
+    <tr><td>Shorts, Reels, TikTok</td><td>Unaware, Problem</td><td>Situation, Solution</td><td>${HOOK_METRIC.short}</td><td>Both (TikTok: AI Business only)</td></tr>
+    <tr><td>Carousels and posts</td><td>Problem</td><td>Unaware, Solution</td><td>${HOOK_METRIC.carousel}</td><td>Both</td></tr>
+    <tr><td>Cold ads (Meta)</td><td>Problem, Solution</td><td>Unaware</td><td>${HOOK_METRIC.ad}</td><td>AI Business</td></tr>
+    <tr><td>Retargeting and email</td><td>Product, Most-Aware</td><td>Solution</td><td>${HOOK_METRIC.ad}</td><td>AI Business</td></tr>
+  </tbody></table></div><p class="small muted" style="margin-top:8px">Organic opens the funnel, paid closes it. Most packaging goes wide; the offer comes in the middle of the piece.</p></section>
+  <section class="card"><h3>What fits each step</h3><p class="small muted" style="margin:4px 0 8px">From the funnel reference (Awareness, Consideration, Decision, Retention). The Studio suggests these when you start from a step or a gap.</p>
+    <div class="tablewrap"><table class="t"><thead><tr><th>Stage</th><th>Step</th><th>Formats that fit</th></tr></thead><tbody>
+    ${BANDS.map((b) => STEPS.filter((s) => s.band === b).map((s, i) => `<tr><td>${i === 0 ? `<b>${b}</b>` : ""}</td><td>${stepTag(s.key)}</td><td>${STEP_FMT[s.key].map(([, label]) => esc(label)).join(" · ")}</td></tr>`).join("")).join("")}
+    </tbody></table></div></section>
+  <section class="card"><h3>The 5 Cs</h3><p class="small">Each piece's <span class="mono">cs:</span> property names what pulls the viewer in: <b>curiosity</b>, <b>conflict</b>, <b>controversy</b>, <b>confusion</b>, <b>contrast</b>.</p></section>`;
+}
+function vAgents() {
+  const N = scope();
+  const changed = [...N].filter((n) => n.file?.modifiedTime).sort((a, b) => b.file.modifiedTime.localeCompare(a.file.modifiedTime)).slice(0, 20);
+  return head("Agents", "Who does what. No human team for now: you decide, agents produce and report. Their rules live in the OS, in each routine note.") + `
+  <div class="grid3">
+    <section class="card"><div class="eyebrow">Strategist and creator</div><h3>Eduardo</h3><p class="small" style="margin-top:6px">Picks gaps, approves ideas, confirms steps, records, approves what goes out, publishes.</p></section>
+    <section class="card"><div class="eyebrow">Content producer</div><h3>Jorge</h3><p class="small" style="margin-top:6px">Drafts the daily piece per lane, turns approved ideas into drafts, proposes each piece's step, reads performance, writes the daily AI radar.</p></section>
+    <section class="card"><div class="eyebrow">Media buyer · AI Business only</div><h3>Ads agent <span class="chip">to hire</span></h3><p class="small" style="margin-top:6px">Builds ad packs from approved pieces and runs them on Meta, each ad judged by its step's metric. Needs Meta connected.</p></section>
+  </div>
+  <section class="card"><h3>Latest changes in your notes</h3>${changeLog(changed)}</section>
+  <section class="card"><h3>Data sources</h3><div class="tablewrap"><table class="t"><thead><tr><th>Source</th><th>Gives</th><th>Lane</th><th>State (31 Oct 2026)</th></tr></thead><tbody>
+    <tr><td>vidIQ</td><td>YouTube views, CTR, retention; IG public data</td><td>Both</td><td>Connected, limited credits</td></tr>
+    <tr><td>Meta Business Suite</td><td>IG and Facebook organic</td><td>Both</td><td>Read by the performance check</td></tr>
+    <tr><td>Adspirer → Meta Ads</td><td>Spend, ROAS, hook rate, CTR</td><td>AI Business</td><td>Installed, not signed in</td></tr>
+    <tr><td>YouTube Studio CSV</td><td>Fallback for YouTube analytics</td><td>Personal Brand</td><td>Option</td></tr>
+    <tr><td>TikTok</td><td>Views, retention</td><td>AI Business</td><td>To decide</td></tr>
+  </tbody></table></div><p class="small muted" style="margin-top:8px">States as written on 31 Oct 2026, not checked since; you said connections are decided later.</p></section>`;
 }
 
 function vSettings() {
@@ -906,14 +1123,18 @@ function vSignIn() {
 
 /* ================= shell ================= */
 const VIEWS = {
+  overview: { name: "System map", group: "How it fits", render: vOverview },
   today: { name: "Today", group: "Plan", render: vToday },
-  ideas: { name: "Ideas", group: "Plan", render: vIdeas },
   journey: { name: "Journey", group: "Plan", render: vJourney },
-  studio: { name: "New idea", group: "Make", render: vStudio },
+  ideas: { name: "Ideas", group: "Plan", render: vIdeas },
+  studio: { name: "Studio", group: "Make", render: vStudio },
   pipeline: { name: "Pipeline", group: "Make", render: vPipeline },
   calendar: { name: "Calendar", group: "Make", render: vCalendar },
   measure: { name: "Measure", group: "Learn", render: vMeasure },
-  settings: { name: "Settings", group: "Studio", render: vSettings },
+  hooks: { name: "Hooks", group: "Learn", render: vHooks },
+  playbook: { name: "Playbook", group: "Learn", render: vPlaybook },
+  agents: { name: "Agents", group: "Run", render: vAgents },
+  settings: { name: "Settings", group: "Run", render: vSettings },
 };
 function syncBox() {
   if (S.loading) return `<span class="small"><span class="spin"></span> ${esc(S.progress || "Reading Drive…")}</span>`;
@@ -923,7 +1144,8 @@ function side() {
   const N = scope();
   const needs = N.filter((n) => n.stage === "drafts" && (n.status === "record" || n.status === "review")).length;
   const open = N.filter((n) => n.stage === "ideas" && (n.status === "new" || n.status === "refining")).length;
-  const badge = { today: needs ? `<span class="n hot">${needs}</span>` : "", ideas: open ? `<span class="n">${open}</span>` : "" };
+  const todo = needs + proposed(N).length, flags = journey().rows.filter((r) => r.flag).length, pipe = N.filter((n) => n.stage === "drafts" && n.status !== "parked" && n.status !== "other").length;
+  const badge = { today: todo ? `<span class="n hot">${todo}</span>` : "", ideas: open ? `<span class="n">${open}</span>` : "", journey: flags ? `<span class="n hot">${flags}</span>` : "", pipeline: pipe ? `<span class="n">${pipe}</span>` : "" };
   const lanes = [["all", "All lanes", "", S.notes.length], ...S.lanes.map((l) => [l.key, l.name, l.lang, S.notes.filter((n) => n.lane === l.key).length])];
   const groups = {}; for (const [k, v] of Object.entries(VIEWS)) (groups[v.group] ||= []).push([k, v]);
   return `<aside class="side" aria-label="Perspective and screens">
@@ -992,7 +1214,7 @@ document.addEventListener("click", (e) => {
   const note = t.dataset.id ? S.notes.find((n) => n.fileId === t.dataset.id) : null;
   switch (a) {
     case "signin": return guarded(async () => { await signIn(); S.auth = "in"; S.expired = false; S.authMsg = ""; render(); await whoami(); await showCache(); await loadAll(); });
-    case "lane": S.lane = k; ls.set("whs.lane", k); S.f.ch = ""; S.f.who = ""; S.jcell = null; return render();
+    case "lane": S.lane = k; ls.set("whs.lane", k); S.f.ch = ""; S.f.who = ""; S.f.step = ""; S.jcell = null; return render();
     case "view": S.view = k; S.open = null; history.replaceState(null, "", `#${k}`); render(); return window.scrollTo({ top: 0 });
     case "open": S.open = t.dataset.id; return renderDrawer();
     case "close": S.open = null; return renderDrawer();
@@ -1012,6 +1234,10 @@ document.addEventListener("click", (e) => {
     case "month": { const [y, m] = S.month.split("-").map(Number); const d = new Date(y, m - 1 + Number(k), 1); S.month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; return render(); }
     case "itab": S.f.it = k; return render();
     case "jcell": S.jcell = S.jcell === k ? null : k; return render();
+    case "jcreate": { const [step, fam] = k.split("|"); S.brief = { step, fam: fam || "", text: "" }; S.view = "studio"; S.open = null; history.replaceState(null, "", "#studio"); render(); return window.scrollTo({ top: 0 }); }
+    case "confirmstep": return note && note.awareness ? write(note, { awareness_status: "confirmed" }, `Step confirmed: ${STEP[note.awareness].name}`) : undefined;
+    case "usefmt": { const c = document.getElementById("f-ch"), f = document.getElementById("f-format"); if (c) c.value = t.dataset.ch; if (f) f.value = t.dataset.f; return; }
+    case "reuse": if (note) { S.brief = { step: note.awareness || "", fam: "", text: `Reuse this hook (from ${note.id || note.title}): ${stripMd(note.hook)}` }; S.view = "studio"; S.open = null; history.replaceState(null, "", "#studio"); render(); window.scrollTo({ top: 0 }); } return;
     case "sort": S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : (["title", "ch", "reading"].includes(k) ? 1 : -1) }; return render();
     case "undo": { const u = S.undo; S.undo = null; if (u) u(); return; }
   }
@@ -1021,7 +1247,8 @@ document.addEventListener("input", (e) => {
   S.f.q = e.target.value; const el = document.getElementById("idea-list"); if (el) el.innerHTML = ideaList();
 });
 document.addEventListener("change", (e) => {
-  const k = e.target.dataset?.in; if (k === "who") { S.f.who = e.target.value; render(); } else if (k === "ch") { S.f.ch = e.target.value; render(); }
+  const k = e.target.dataset?.in; if (k === "who") { S.f.who = e.target.value; render(); } else if (k === "ch") { S.f.ch = e.target.value; render(); } else if (k === "step") { S.f.step = e.target.value; render(); }
+  if (e.target.id === "f-step" || e.target.id === "f-lane") { const fit = document.getElementById("fit"); if (fit) fit.innerHTML = fitHtml(document.getElementById("f-step").value, document.getElementById("f-lane").value); }
 });
 document.addEventListener("submit", (e) => {
   if (e.target.id === "client-form") {
@@ -1035,7 +1262,7 @@ document.addEventListener("submit", (e) => {
   const f = { lane: get("lane"), title: get("title"), text: get("text"), step: get("step"), channel: get("channel"), format: get("format"), offer: get("offer"), approve: fd.get("approve") === "on" };
   if (!f.title) return toast("Give it a working title.");
   const form = e.target; S.busy = true; toast("Saving the idea…");
-  guarded(async () => { try { const n = await createIdea(f); form.reset(); S.open = n.fileId; render(); toast(`Saved: ${n.name}`); } finally { S.busy = false; } });
+  guarded(async () => { try { const n = await createIdea(f); form.reset(); S.brief = { step: "", fam: "", text: "" }; S.open = n.fileId; render(); toast(`Saved: ${n.name}`); } finally { S.busy = false; } });
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.open) { S.open = null; renderDrawer(); } });
 document.addEventListener("visibilitychange", () => {
